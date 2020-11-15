@@ -213,4 +213,106 @@ Nachteile von Redundanzen sind:
 \item Hohe Kosten durch mehrfache Hardware bzw. mehrfache Implemenation (falls überhaupt möglich)
 \item Benötigt Mechanismen zur Fehler-Erkennung, welche selbst wieder Fehleranfällig sein können
 \end{itemize}
+
+\section{Krypographie}
+\begin{itemize}
+\item Vertraulichkeit (Confidentiality)
+	\begin{itemize}
+	\item Schutz vor unbefugten Zugriff auf Informationen / Daten
+	\end{itemize}
+\item Integrität
+	\begin{itemize}
+	\item Schutz vor Veränderung von Informationen / Daten
+	\end{itemize}
+\item Verfügbarkeit (Availability)
+	\begin{itemize}
+	\item Daten oder Systeme sind verfügbar oder erreichbar
+	\end{itemize}
+\item Autehntizität (Authenticity)
+	\begin{itemize}
+	\item Schutz vor Fälschung von Informationen / Daten
+	\end{itemize}
+\item Nicht-Abstreitbarkeit (Non-Repudiation)
+	\begin{itemize}
+	\item Aktion ist nachprüfbar und kann nicht abgestritten werden
+	\end{itemize}
+\end{itemize}
+\subsection{Begriffe}
+\begin{itemize}
+\item Klartext/Nachricht: eine zu verschlüsselnde Information
+\item Klartextraum: Menge aller möglichen Klartexte
+\item Chiffrat, Chiffretext: Verschlüsselte Nachricht
+\item Chiffretextraum: Menge aller möglichen Chiffrate
+\item Schlüssel: Ein Geheimnis, welches zur Ent-/Verschlüsselung benötigt wird
+\item Schlüsselraum: Menge aller möglichen Schlüssel
+\item Verschlüsselung: Umwandlung eines Klartext in ein Chiffrat
+\item Entschlüsselung: Umwandlung eines Chiffrats in einen Klartext
+\end{itemize}
+\textbf{Kerckhoffs Prinzipien}
+\begin{enumerate}
+\item Das System muss praktisch, wenn nicht sogar mathematisch, unentschlüsselbar sein (''Unentschlüsselbarkeit'')
+\item Es darf keine Geheimhaltung erfordern und darf ohne Schwierigkeiten  in die Hände des Feindes fallen (''Keine Geheimhaltung des Systems'')
+\item Der Schlüssel muss ohne Hilfe geschriebener Notizen kommunizierbar und aufbewahrbar sein und er muss ausgewechselt oder modifiziert werden können nach Belieben der Kommunikationspartner (''Schlüssel ohne Aufschreiben'')
+\item Es muss anwendbar sein auf die telegraphische Kommunikation
+\item Es soll protabel sein und seine Funktion soll nicht die Zusammenkunft mehrerer Personen erfordern 
+\item Schließlich ist es notwendig, angesichts der Umstände, unter denen es angewendet werden soll, dass das System einfach benutzbar ist und weder große gedankliche Anstrengung erfordert noch die Kenntnis einer langen Liste zu beachtender Regeln (''einfach benutzbar'')
+\end{enumerate}
+\subsection{Verschiebechiffre}
+Die Ceasar-Chiffre ersetzt jeden Buchstaben des Klartextes durch den Buchstaben 3 Stellen weiter rechts, beim Entschlüsseln genau umgekehrt.\\
+Die Verschiebechiffre ersetzt alle Buchstaben durch den Buchstaben welcher eine beliebige aber feste Anzahl an Stellen weiter rechts steht. Der Schlüssel ist die Anzahl an Verschiebungen, d.h. 0,1,2,...,25.
+
+\subsection{Mathematische Grundlagen}
+Als \blue{Einwegfunktionen} bezeichnet man Funktionen bei denen es ''einfach'' ist den Funktionswert $y = f(x)\in Y$ zu bestimmen, aber ''schwer'' ein Urbild $x\in f^{-1}[\{y\}]$ zu finden. Die Existenz von Einwegfunktionen ist nicht bewiesen (P/NP).
+\subsubsection{Teilbarkeitsregeln}
+\begin{align}
+a | a\\
+a | b \wedge b |c \Rightarrow a|c\\
+a|b\wedge b\neq 0 \Rightarrow |a|\leq |b|\\
+a | b\wedge b|a \Rightarrow |a| = |b|
+\end{align}
+Sind $a,n\in\mathbb{Z}$ mit $n\neq 0$, dann gibt es eindeutig bestimmte Zahlen $q,r\in\mathbb{Z}$ sodass
+\begin{align*}
+a= qn+r\\
+0\leq r < |n|\\
+q = \lfloor \frac{a}{n} \rfloor \wedge r = a -qn
+\end{align*}
+\subsubsection{Größter gemeinsamer Teiler}
+\begin{align}
+\textrm{ggT}(a,0)=|a|\\
+\textrm{ggT}(a,1)=1\\
+\textrm{ggT}(a,b)=\textrm{ggT}(b,a)\\
+\textrm{ggT}(a,b)=\textrm{ggT}(|a|,|b|)\\
+\textrm{ggT}(a,b)=\textrm{ggT}(b,a-b)\\
+\textrm{Für } b\neq 0 \textrm{ gilt } \textrm{ggT}(a,b)=\textrm{ggT}(b,a \textrm{ mod } b)
+\end{align}
+
+Lineare diophantische Gleichung: $ax+by=c$\\
+Eine diophantische Gleichung kann wie folgt gelöst werden.\\
+Löse $ax'+by'=$ggT(a,b) und definiere $x=\frac{c}{\textrm{ggT(a,b)}}\cdot x'$, $y=\frac{c}{\textrm{ggT(a,b)}}\cdot y'$
+
+\textbf{Beispiel erweiteter Euklid:}
+$1337\cdot x+42\cdot y=\blue{7}$\\
+\begin{tabular}{|l|l|l|l|l|}
+a & b & $\lfloor \frac{a}{b} \rfloor$ & x & y\\
+\hline
+1337 & 42 & 31 & -1 & $1-31*(-1)=32$\\
+\hline
+42 & 35 & 1 & 1 & $0-1*1=-1$\\
+\hline
+35 & 7 & 5 & 0 & 1\\
+\hline
+\blue{7} & 0 & & 1 & 0
+\end{tabular}\\
+\subsubsection{Primzahlen}
+Fundamentalsatz der Arithmetik:\\
+Jede natürliche Zahl $n>1$ besitzt eine Zerlegung in ein Produkt aus Primzahlen, welche bis auf die Reihenfolge eindeutig ist.\\
+Es gibt unendlich viele Primzahlen.\\
+
+Die Eulersche-Phi-Funktion $$\varphi (b)=|\{a\in\mathbb{N} : a < b, \textrm{ggT}(a,b)=1\}|$$ beschreibt dei Anzahl der zu b teilerfremden Zahlen.\\
+Für eine Primzahl p gilt $\varphi (p)=p-1$ und $\varphi (p^n)=p^n-p^{n-1}$.\\
+Für teilerfremde Zahlen $a,b\in \mathbb{N}$ gilt $\varphi (ab)=\varphi (a)\cdot \varphi (b)$.\\
+Sind $m,n\in \mathbb{N}$ teilerfremd, dann gilt $m^{\varphi (n)}\textrm{mod }n= 1$.\\
+\textbf{Kleiner Satz von Fermat:}\\
+Für eine Primzahl p und ein teilerfremde Zahl $m\in \mathbb{N}$ gilt $m^{p-1} \textrm{mod }p = 1$.
+
 \end{document}
