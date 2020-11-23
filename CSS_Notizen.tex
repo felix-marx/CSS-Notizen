@@ -93,7 +93,7 @@ Trends und Herausforderungen:\\
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.6]{Grafiken/Trend-Miniaturisierung.png}
-\caption{Herausforderungen bei der Mobilität}
+\caption{Herausforderungen bei der Miniaturisierung}
 \end{figure}\\
 
 \blue{Social Engineering} bezeichnet das Erlangen von vertraulichen Daten durch psychologische Techniken\\
@@ -314,5 +314,115 @@ Für teilerfremde Zahlen $a,b\in \mathbb{N}$ gilt $\varphi (ab)=\varphi (a)\cdot
 Sind $m,n\in \mathbb{N}$ teilerfremd, dann gilt $m^{\varphi (n)}\textrm{mod }n= 1$.\\
 \textbf{Kleiner Satz von Fermat:}\\
 Für eine Primzahl p und ein teilerfremde Zahl $m\in \mathbb{N}$ gilt $m^{p-1} \textrm{mod }p = 1$.
+\subsection{Symmetrische Kryptosysteme}
+In symmetrischen Kryptosystemen ist der Schlüssel zum Ver- und Entschlüsseln der selbe.\\
+Formal bezeichnet ein symmetrisches Kryptosystem ein 5-Tupel $(\mathcal{M},\mathcal{K}, \mathcal{C},e,d)$ mit $\mathcal{M}$ als Menge an Klartexten, $\mathcal{K}$ als Menge von Schlüsseln, $\mathcal{C}$ als Menge an Chiffretexten.
+$e: \mathcal{M}\times\mathcal{K}\rightarrow\mathcal{C}$ ist die Verschlüsselungsfunktion und $d: \mathcal{C}\times\mathcal{K}\rightarrow\mathcal{M}$ als Entschlüsselungsfunktion.\\
+Weiter werden folgende Funktionen eingeführt:
+\begin{align*}
+num: & \{ A,B,C,...,Z\}\rightarrow\{ 0,1,2,...,25\} \textrm{ Zuordnung der Zahlenwerte}\\
+char: & \{ 0,1,2,...,25\}\rightarrow\{ A,B,C,...,Z\}\\
+sr: & \{A,...,Z\}\times\{0,1,...,25\}\rightarrow\{A,...,Z\} \textrm{ Ist ein Rechtsshift}\\
+sl: & \{A,...,Z\}\times\{0,1,...,25\}\rightarrow\{A,...,Z\} \textrm{ Linksshift}
+\end{align*}
+Damit ergibt sich die für Verschiebechiffren die folgenden Interpretationen:
+\begin{align*}
+e(w_0w_1...w_n,k) &= sr(w_0,k)sr(w_1,k)...sr(w_n,k)\\
+d(w_0w_1...w_n,k) &= sl(w_0,k)sl(w_1,k)...sl(w_n,k)
+\end{align*}
+Monoalphabetische Chiffretexte können durch Häufigkeitsanalysen gebrochen werden.
+Um das zu verhinden existiert das \blue{One Time Pad} hierbei hat der Schlüssel die selbe Länge wie der Klartext, d.h. jeder Buchstabe im Klartext wird mit einem eigenen Schlüsselbuchstaben verschlüsselt. Das Kryptosystem sieht dann so aus: $(\mathcal{M}^n,\mathcal{K}^n, \mathcal{C}^n,e,d)$
+Die Bitweise veroderung ist ein One Time Pad $(\mathbb{Z}_2^n,\mathbb{Z}_2^n,\mathbb{Z}_2^n,e,d)$ mit 
+\begin{align*}
+e:\mathbb{Z}_2^n\times\mathbb{Z}_2^n\rightarrow\mathbb{Z}_2^n,e(x,k)=x\oplus k\\
+d:\mathbb{Z}_2^n\times\mathbb{Z}_2^n\rightarrow\mathbb{Z}_2^n,d(y,k)=y\oplus k
+\end{align*}
+Ein Kryptosystem heißt \blue{perfekt sicher} wenn für einen gegebenen Chiffretext jeder Klartext gleich wahrscheinlich ist, d.h. das One Time Pad ist bei gleichverteiltem zufälligen Schlüssel perfekt sicher.
+Ein Kryptosystem heißt \blue{semantisch sicher}, wenn es für einen Angreifer der die Länge der Nachricht und das Chiffrat kennt nicht wesentlich einfacher ist auf den Klartext zu schließen als für einen Angreifer der nur die Länge des Klartextes kennt.\\
+Als \blue{Blockchiffren} werden Kryptosysteme bezeichnet deren Klartexte $M^n$ und Chiffretexte $C^n$ alle eine Blocklänge n und deren Schlüssel $K^m$ die Schlüssellänge m haben.
+Blockchiffre Verfahren sind unter anderem:
+\begin{itemize}
+\item Advanced Enrcyption Standard (AES) oder Rijndael
+	\begin{itemize}
+	\item Blocklänge: $n= 128$
+	\item Schlüssellänge: $m\in \{128,192,256\}$
+	\end{itemize}
+\item Data Encryption Standard (DES)
+	\begin{itemize}
+	\item Gebrochen für $n=64$ und $m=56$
+	\item 3DES mit $n=64$ und $m=168$ hat die selbe Sicherheit wie 112 Bit Schlüssel
+	\end{itemize}
+\item Serpent ($n=128$, $m\in\{128,192,256\}$)
+\item Twofish ($n=128$, $m\in\{128,192,256\}$)
+\item Blowfish ($n=64$, $32\leq m\leq 448$ - Standard: $m=128$)
+\end{itemize}
+\subsubsection{Vigenère mit alphabetischen Schlüssel, Länge n}
+Beim Vignerère wird der Klartext entsprechend eines Codewortes verschlüsselt. Dabei wird der aktuelle Buchstabe des Klartextes um die Wertigkeit des aktuellen Buchstabens des Codewortes im Alphabet nach rechts verschoben. Ist man am Ende des Schlüsselwortes angekommen beginnt man wieder am ersten Buchstaben.\\
+Verwendet man einen zufällig erstellten Schlüssel, der genauso lang ist wie der Klartext und benutzt ihn nur ein einziges Mal, so ist die Verschlüsselung perfekt sicher, kann also ohne Schlüssel nicht entschlüsselt werden (One-Time-Pad).
+Zur Darstellung der Verschiebung kann ein Vigenère-Quadrat verwendet werden. Der Schlüsselraum ist $25^n$.\\
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.7]{Grafiken/VigenereSquare.jpg}
+\caption{Vigenère Quadradt, an der X-Achse ist die Verschiebung und Y-Achse der Klarbuchstabe}
+\end{figure}
+\subsubsection{Electronic Codebook Modus}
+Im ECB Modus werden die einzelnen Blöcke im Blockchiffre Kryptosystem jeweils mit dem selben Schlüssel verschlüsselt und die einzelnen Chiffretexte kombiniert um den gesamten Chiffretext zu bekommen. Die \hyperref[pic:ECBModus]{Entschlüsselung} läuft analog.
+Da nicht alle Blöcke die genau vom Kryptosystem geforderte Länge besitzen müssen die Blöcke teilweise mit einer Auffüllfunktion $pad: M^*\rightarrow (M^n)^*$ gefüllt idealerweise sollte eine pad Funktion wieder umkehrbar sein.
+Der ECB Modus ist für Klartexte welche in mehrere Blocke augeteilt werden unsicher und sollte nie verwendet werden.\\
+Im ECB Modus ist die Ver- und Entschlüsselung parallelisierbar.
 
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{Grafiken/ECBModus.png}
+\caption{Entschlüsselung im ECB Modus}
+\label{pic:ECBModus}
+\end{figure}
+
+\subsubsection{Cipher Block Chaining Modus}
+Der CBC Modus ist eine Verbesserung des ECB Modus, da hier für die Ver- und \hyperref[fig:CBCModus]{Entschlüsselung} jeweils der vorherige Block als Rauschen mit dem Klartext verodert wird, sodass auch gleiche Muster im Klartext verschiedene Ergebnisse im Chiffretext produzieren. Dafür erweitern wir das Kryptosystem um die Menge der Zufallswerte $\mathcal{R}$ aus welcher der Initialisierungvektor gewählt wird. Hierbei ist $\mathcal{R}$ nicht geheim und kann unverschlüsselt übertragen werden.\\
+Es soll $e(x,k,r_1)\neq e(x,k,r_2)$ gelten. Für die Sicherheit der Verschlüsselung ist wichtig, dass jeder Zufallswert nur einmal verwendet wird.\\
+Das erweiterte Kryptosystem heißt \blue{randomisiertes symmetrisches Kryptosystem} und wird als 6-Tupel dargestellt: $(\mathcal{M},\mathcal{K},\mathcal{C},\mathcal{C},\mathcal{R},e^*,d^*)$. Der Definitionsbereich von $e^*$ und $d^*$ wird um $\mathcal{R}$ erweitert.
+$$y_i = e(x_i\oplus y_{i-1},k), x_i = d(y_i,k)\oplus y_{i-1} \textrm{ für } i\geq 1$$
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{Grafiken/CBCModus.png}
+\caption{Entschlüsselung im CBC Modus, bei der Entschlüsselung umgedreht, sodass Parallelisierung unmöglich ist}
+\label{pic:CBCModus}
+\end{figure}
+Die Verschlüsselung ist damit nicht mehr parallelisierbar, aber die Entschlüsselung bleibt es.\\
+
+Damit die Verschlüsselung auch parallelisierbar ist gibt es den \blue{Counter (CTR) Modus} hier wird bei der Verschlüsselung für jeden Block der Initialiserungsvektor mit einem Zählerwert verschlüsselt und erst dann mit dem Klartext verodert. Die \hyperref[pic:CTRModus]{Entschlüsselung} läuft genau gleich ab, nur das hier der Ciffretext verodert wird.\\
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{Grafiken/CounterCTRModus.png}
+\caption{Entschlüsselung im CTR Modus, Nonce ist der Initialiserungsvektor}
+\label{pic:CTRModus}
+\end{figure}
+Die Wahl des Initialisierungsvektor muss unvorhersagbar sein, das heißt nicht das die Initialisierungsvektoren selber geheim bleiben müssen (die Sicherheit des Chiffretextes garantiert der Schlüssel) sondern dass die Wahl zukünftiger Initialisierungsvektoren nicht vorhersagbar sein dar (sie also von geheimen Informationen abhängen) und ein Angreifer die Wahl nicht beeinflussen kann\footnote{\url{https://tinyurl.com/y5x3bd5j} BSI Seite 76}.\\
+Möglichkeiten zur Wahl des Initialisierungsvektor sind:
+\begin{itemize}
+\item Zufällige Initialisierungvektoren, d.h. eine zufällige Bitfolge der Länge n, hier muss die Bitfolge aber ein Entropie von 95 Bit besitzen ($n\geq95$?)
+\item Verschlüsselte Initialisierungsvektoren, wir wählen einen determistisch erzeugten Wert und verschlüsseln ihn mit der einzusetzenden Blockchiffre und Schlüssel, der Chiffretext ist der Initialisierungsvektor
+\end{itemize}
+
+Der randomatisierte Zähler wird als eine Funktion $ctr: \mathbb{Z}_2^*\times \mathbb{N}_0\rightarrow \mathbb{Z}_2^n$  definiert welche die basierend auf dem gegebenen Zufallswert eine Erhöhung in unspezifierter Weise ausführt.\\
+Mögliche Implementationen umfassen:
+\begin{itemize}
+\item Einfacher Zähler, welcher den Zufallswert um n erhöht
+\item  Die Hälfte der Bits des Zufallswertes sind reserviert und nur die rechte Hälfte der Bits wird erhöht und läuft über\footnote{\url{https://tinyurl.com/y27ga7ew} NST Seite 18ff, Anhang B}
+\end{itemize}
+Das wiederverwenden des Zufallswertet kompromitiert die Sicherheit der Verschlüsselung, da sobald ein Ciffretext einen Klartext zugeordnet wurde der Schlüssel ermittelt werden kann.\\
+Das CTR Modus Kryptosystem wird formal so bezeichnet $((\mathbb{Z}_2^n)^*,\mathbb{Z}_2^n,(\mathbb{Z}_2^n)^*,\mathbb{Z}_2^*,e^*,e^*)$ wobei e und d wie folgt definiert sind:
+\begin{align*}
+e^*:(\mathbb{Z}_2^n)^*\times \mathbb{Z}_2^m \times \mathbb{Z}_2^n\rightarrow (\mathbb{Z}_2^n)^*, e^*(x_0x_1...x_l,k,r)=y_0y_1...y_l \textrm{ mit } y_i = e(ctr(r,i),k)\oplus x_i\\
+d^*:(\mathbb{Z}_2^n)^*\times \mathbb{Z}_2^m \times \mathbb{Z}_2^n\rightarrow (\mathbb{Z}_2^n)^*, d^*(y_0y_1...y_l,k,r)=x_0x_1...x_l \textrm{ mit } x_i = e(ctr(r,i),k)\oplus y_i\\
+\end{align*}
+\subsubsection{Stromchiffren}
+Stromchiffren sind pseudozufällige Schlüsselströme welche aus dem Schlüsselwert generiert werden und zur Ver- und Entschlüsselung mittels xor mit den Klar-/Chiffretext kombiniert werden. Deshalb muss der Schlüssel sicher erzeugt sein, da die Sicherheit des Verfahrens nur davon abhängt, denn ein Pseudozufallszahlengenerator ist deterministisch.\\
+Formal wird ein Stromchiffre Kryptosystem so bezeichnet: $(\mathbb{Z}_2^*,\mathbb{Z}_2^k,\mathbb{Z}_2^*,e,d)$ mit der Funktion:
+\begin{align*}
+keystream: \mathbb{Z}_2^*\times \mathbb{Z}_2^k\rightarrow\mathbb{Z}_2^* \textrm{ mit } |keystream(x,z)|=|x|\\
+e(x,z)=d(x,z) = x\oplus keystream(x,z)
+\end{align*}
+Hierbei liegt es an der Implementation des keystreams ob dieser auch vom ersten Parameter abhängig ist oder ob die Zufallswert nur aus dem Schlüssel erzeugt werden.
 \end{document}
