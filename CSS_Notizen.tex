@@ -265,7 +265,8 @@ Die Ceasar-Chiffre ersetzt jeden Buchstaben des Klartextes durch den Buchstaben 
 Die Verschiebechiffre ersetzt alle Buchstaben durch den Buchstaben welcher eine beliebige aber feste Anzahl an Stellen weiter rechts steht. Der Schlüssel ist die Anzahl an Verschiebungen, d.h. 0,1,2,...,25.
 
 \subsection{Mathematische Grundlagen}
-Als \blue{Einwegfunktionen} bezeichnet man Funktionen bei denen es ''einfach'' ist den Funktionswert $y = f(x)\in Y$ zu bestimmen, aber ''schwer'' ein Urbild $x\in f^{-1}[\{y\}]$ zu finden. Die Existenz von Einwegfunktionen ist nicht bewiesen (P/NP).
+\label{def:Einwegfunktion}
+Als \blue{Einwegfunktionen} bezeichnet man Funktionen deren Funktionswert $y = f(x)\in Y$ zu einem gegebenen $x$ in polynomieller Zeit berechenbar ist, aber ein Urbild $x\in f^{-1}[\{y\}]$ zu einem gegbenen $y$ nicht in Polynomialzeit bestimmbar ist. Die Existenz von Einwegfunktionen ist nicht bewiesen (P/NP).
 \subsubsection{Teilbarkeitsregeln}
 \begin{align}
 a | a\\
@@ -501,7 +502,7 @@ Sei $A$ ein Alphabet und $m,n\in\mathbb{N}$ mit $n<m$, dann heißt die Funktion 
 Anforderungen an kryptographische Hashfunktionen sind:
 \begin{itemize}
 \item Leicht und schnell zu berechnen
-\item Einwegfunktion\footnote{Eine Funktion deren Funktionswert $y=f(x)$ zu einem gegebenen x in polynomieller Zeit berechenbar ist, aber das Urbild $x$ zu einem gegebenen $y$ nicht in Polynomialzeit berechenbar ist}
+\item \hyperref[def:Einwegfunktion]{Einwegfunktion}
 \item (Stark) kollisionsresistent
 \item Kleine Änderungen an der Eingabe haben große Änderungen am Hashwert
 \end{itemize}
