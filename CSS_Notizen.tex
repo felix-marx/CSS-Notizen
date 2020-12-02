@@ -12,6 +12,7 @@
 \usepackage{caption}
 \usepackage{hyperref}
 \usepackage{upgreek}
+\usepackage{tikz}
 \hypersetup{
     colorlinks,
     citecolor=black,
@@ -52,6 +53,7 @@
 
 \newcommand{\blue}[1]{\textcolor{blue}{#1}}
 \newcommand{\orange}[1]{\textcolor{orange}{#1}}
+\newcommand{\violet}[1]{\textcolor{violet}{#1}}
 %%End code style
 
 \title{Computer System Sicherheit\\Notizen WS20/21}
@@ -216,6 +218,7 @@ Nachteile von Redundanzen sind:
 
 \section{Krypographie}
 \begin{itemize}
+\label{item:schutzziele}
 \item Vertraulichkeit (Confidentiality)
 	\begin{itemize}
 	\item Schutz vor unbefugten Zugriff auf Informationen / Daten
@@ -228,7 +231,7 @@ Nachteile von Redundanzen sind:
 	\begin{itemize}
 	\item Daten oder Systeme sind verfügbar oder erreichbar
 	\end{itemize}
-\item Autehntizität (Authenticity)
+\item Authentizität (Authenticity)
 	\begin{itemize}
 	\item Schutz vor Fälschung von Informationen / Daten
 	\end{itemize}
@@ -277,6 +280,7 @@ a= qn+r\\
 q = \lfloor \frac{a}{n} \rfloor \wedge r = a -qn
 \end{align*}
 \subsubsection{Größter gemeinsamer Teiler}
+\label{sec:euklid}
 \begin{align}
 \textrm{ggT}(a,0)=|a|\\
 \textrm{ggT}(a,1)=1\\
@@ -387,7 +391,7 @@ $$y_i = e(x_i\oplus y_{i-1},k), x_i = d(y_i,k)\oplus y_{i-1} \textrm{ für } i\g
 \centering
 \includegraphics[scale=0.5]{Grafiken/CBCModus.png}
 \caption{Entschlüsselung im CBC Modus, bei der Entschlüsselung umgedreht, sodass Parallelisierung unmöglich ist}
-\label{pic:CBCModus}
+\label{fig:CBCModus}
 \end{figure}
 Die Verschlüsselung ist damit nicht mehr parallelisierbar, aber die Entschlüsselung bleibt es.\\
 
@@ -425,4 +429,136 @@ keystream: \mathbb{Z}_2^*\times \mathbb{Z}_2^k\rightarrow\mathbb{Z}_2^* \textrm{
 e(x,z)=d(x,z) = x\oplus keystream(x,z)
 \end{align*}
 Hierbei liegt es an der Implementation des keystreams ob dieser auch vom ersten Parameter abhängig ist oder ob die Zufallswert nur aus dem Schlüssel erzeugt werden.
+
+\subsection{Asymmetrische Kryptosysteme}
+Bei asymmetrischen Kryptosystemen werden zum Ver- und Entschlüsseln zwei verschiedene Schlüssel verwendet. Es gibt also ein Schlüsselpaar aus \blue{öffentlichen Schlüssel},der zum Verschlüsseln verwendet wird und einem \blue{privaten Schlüssel} welcher zum Entschlüsseln verwendet wird.
+Als asymmetrisches Kryptosystem bezeichen wir das 7-Tupel: $$(\mathcal{M},\mathcal{K}_s, \mathcal{K}_p,\mathcal{K},\mathcal{C},e,d)$$
+Asymmetrische Kryptosysteme sind viel langsamer und benötigen wesentlich größere Schlüssel als symmetrische Kryptographie. Die Kombination beider Verfahren wird als hybride Verschlüsselung bezeichnet, hier wird die Nachricht mit einem symmetrischen System verschlüsselt, die Schlüssel aber über ein asymmetrisches System verschlüsselt, die Nachricht ist hier allerdings nun von der Sicherheit zweier Kroptosystemen abhängig.
+\subsubsection{RSA-Kryptosystem}
+Das RSA Verfahren beruht auf der Annahme, dass es kein effizientes Verfahren zum Faktorisieren gibt, das Verfahren kann mit Quantencomputern gebrochen werden.
+Das Verfahren sollte zur Sicherheit mindestens mit 2048 Bit großen Schlüsseln arbeiten, besser mit 4096 Bit.
+\begin{tabbing}
+1. \= FormatFormat\= FormatFormatFormatFormat\kill
+1.\>Wähle große Primzahlen $p,q$ mit $p\neq q$\\
+2.\>Berechne $n=pq$ und $\varphi(n)=(p-1)\cdot(q-1)$\\
+3.\>Wähle einen \blue{Verschlüsselungsexponenten} $1\neq e\in \mathbb{Z}_{\varphi(n)}^\times$ so dass ggT$(e,\varphi(n))=1$ gilt\\
+4.\>Berechne den \blue{Entschlüsselungsexponenten} $d\in\mathbb{Z}_{\varphi(n)}^\times$, so dass \\
+\>\>$d$ das \hyperref[sec:euklid]{multiplikative Inverse} von e ist, d.h.$ed$ mod $\varphi(n)=1$
+\end{tabbing}
+Hierbei ist $(e,n)$ der öffentliche Schlüssel und $(d,n)$ der private Schlüssel.
+Zur Verschlüsselung wird anschließend der Klartext in Zahlenwerte umgewandelt, sodass $c=m^e$ mod $n$ den Chiffretext und $m = c^d$ mod $n$ den Klartext ergibt.\\
+Zur Sicherheit sollten anschließend die Werte $p,q,\varphi(n)$ gelöscht werden, da bereits der Besitz eines einzigen davon das Verfahren bricht, aus p bzw. q lässt sich die andere Primzahl berechnen, da das Produkt beider bekannt ist und mit $\varphi(n)$ lässt sich einfach mit dem öffentlichen Schlüssel der private berechnen.\\ Eine häufige Wahl für den public-key e ist die Zahl 65537, da dieser von einigen Autoritäten vorgeben wird und ein guter Mittelwert für die Verschlüsselungsgeschwindigkeit darstellt\footnote{\url{https://tinyurl.com/y7uy76b9} Crypto Stackexchange}.
+
+\newpage
+\textbf{Beispielrechnung:}\\
+Wir wählen die Primzahlen $p=47$ und $q=59$ und als Nachricht den Wert $m=2345$.
+\begin{align*}
+n=p\cdot q= 47\cdot 59 = 2773\\
+\varphi(n)=(p-1)(q-1)= 46\cdot 58=2668
+\end{align*}
+Damit haben wir also $\mathbb{Z}_{2668}^\times$ und können z.B. $e=17$ wählen. Damit ergibt sich für d mithilfe des erweiterten euklidischen Algorithmus:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|l|l|l|}
+$\varphi(n)$ & $e$ & $\lfloor\frac{\varphi(n)}{e}\rfloor$ & x & y\\
+\hline
+2668 & 17 & 156 & -1 & 1-156$\cdot$(-1)=157\\
+\hline
+17 & 16 & \violet{1} & 1 & \orange{0}-\violet{1}$\cdot$\blue{1}=$-1$\\
+\hline
+16 & 1 & 16 & \orange{0}& \blue{1}\\
+\hline
+1 & 0 & & 1 & 0
+\end{tabular}
+\end{table}\\
+Damit ist der $d=157$ und der private Schlüssel also $(157,2773)$ und der öffentliche Schlüssel $(17,2773)$
+Damit ergibt sich:
+\begin{align*}
+c=m^e mod n = 2345^{17} mod 2773 = 2030\\
+m=c^d mod n = 2030^{157} mod 2773 = 2345
+\end{align*}
+
+\subsubsection{Elgramal-Kryptosystem}
+Ein Verfahren was auf der Annahme beruht, dass der diskrete Logarithmus nicht einfach berechenbar ist.\\
+Die Schlüsselerzeugung funktioniert wie folgt:\\
+1. Wähle eine zyklische\footnote{Sie besitzt einen Erzeuger, sodass $\langle g\rangle:=\{g^n : n\in \mathbb{Z}\}=\mathcal{G}$ (Potenz mit dem gegebenen Verknüpfungsoperator)} Gruppe $\mathcal{G}=(G,\diamond,e)$ mit Erzeuger $g$ und $a\in \{2,...,ord(\mathcal{G})\footnote{Anzahl der Elemente in Gruppe bzw. unendlich}-1\}$, setze $A=g^a$\\
+2. Privater Schlüssel ist $(\mathcal{G},g,a)$\\
+3. Öffentlicher Schlüssel ist $(\mathcal{G},g,A)$\\
+
+Die Verschlüsselung erfolgt wie folgt:\\
+1. Wähle zufällig $r\in \{1,...,ord(\mathcal{G})-1\}$, setze $R = g^r$\\
+2. Berechne $K=A^r=(g^a)^r=g^{ar}$ und $C=m\diamond K$\\
+3. Sende $e(m,(\mathcal{G},g,A))=(R,C)$\\
+
+Die Entschlüsselung funktioniert wie folgt:\\
+1. Berechne $K=R^a=(g^r)^a=g^{ra}=g^{ar}$\\
+2. Bestimme $K^{-1}$ in $\mathcal{G}$\\
+3. $d((R,C),(\mathcal{G},g,a))=C\diamond K^{-1}=m$
+
+\subsection{Hashfunktionen}
+Mittels Hashfunktionen können die \hyperref[item:schutzziele]{Schutzziele Integrität und Authentizität, sowie Nicht-Abstreitbarkeit} gewährleistet werden.\\
+Sei $A$ ein Alphabet und $m,n\in\mathbb{N}$ mit $n<m$, dann heißt die Funktion $h: A^m\rightarrow A^n$ \blue{Kompressionsfunktion} und $h: A^*\rightarrow A^n$ Hashfunktion. Diese Funktionen heißen \blue{schwach kollisionsresistent}, falls kein Angreifer in der Lage ist effizient zu einem gegebenen Urbild $x$ einen zweiten Wert $x'$ zu finden der auf den selben Wert abbildet,d.h. $x,x'\in A : x\neq x' \wedge h(x)=h(x')$. Sie heißen \blue{stark kollisionsresitent}, falls es nicht möglich ist irgendeine Kollision effizient zu bestimmen.\\
+Anforderungen an kryptographische Hashfunktionen sind:
+\begin{itemize}
+\item Leicht und schnell zu berechnen
+\item Einwegfunktion\footnote{Eine Funktion deren Funktionswert $y=f(x)$ zu einem gegebenen x in polynomieller Zeit berechenbar ist, aber das Urbild $x$ zu einem gegebenen $y$ nicht in Polynomialzeit berechenbar ist}
+\item (Stark) kollisionsresistent
+\item Kleine Änderungen an der Eingabe haben große Änderungen am Hashwert
+\end{itemize}
+Eine Kompressionsfunktion kann auch als Konkatenation der Verschlüsselungsfunktion von Blockchiffren aufgefasst werden.
+\subsubsection{Merkle-Damg\r{a}rd-Konstruktion}
+Sei $A$ ein Alphabet, $f: A^{n+m}\rightarrow A^n$ eine Kompressionsfunktion,\\
+pad:$A^*\rightarrow (A^m)^*$ eine Auffüllfunktion, $x_0\in A^n$ ein beliebiger Initialisierungsvektor und\\
+g:$A^n\rightarrow A^n$ eine Finalisierungsfunktion.\\
+Dann ist die Hashfunktion $h: A^*\rightarrow A^n$ für $x\in A^*$ definiert durch
+\begin{enumerate}
+\item $x_1x_2...x_k=pad(x)$ mit $x_i\in A^m$
+\item $h_0=f\left( conc(x_0,x_1)\right)$ und $h_i=f\left(conc(h_{i-1},x_i)\right)$ für $1\leq i\leq k$
+\item $h(x)=g(h_k)$
+\end{enumerate}
+Wobei das Salt oft $x_0=0^n$ als 0-Padding und $g=id_{A^n}$ als Identitätsfunktion gewählt wird.
+\begin{figure}
+\centering
+\includegraphics[scale=0.6]{Grafiken/merkledamgard.png}
+\caption{Bei Merkle-Damg\r{a}rd wird jeder Block mit den vorigen Block komprimiert und dann mit g finalisiert}
+\end{figure}
+\subsubsection{Exkurs: Chosen Target Forced Prefix}
+Die Merkle-Dam\r{a}rd-Konstruktion hat gegebenfalls - falls die Kompressionsfunktion $f$ nicht schwach kollisionsresistent ist - Schwächen für Chosen Target Forced Prefix (CTFP) Angriffe, wo ein Angreifer für einen gegebenen Hash $H$ einer nicht umbedingt geheimen Nachricht $N$, aus einem erzwungenen Präfix $P$ kokateniert mit einem frei wählbaren Suffix $S$ eine Nachricht erzeugt, sodass $h(M)=H=h(PS)$ gilt. Hat der Angreifer eine freie Wahl über die möglichen Formulierungen von $P$, sodass deren Bedeutung erhalten bleibt, kann hier nun aus einer signifikant kleineren Menge an Kodierungen ein Suffix $S$ gesucht werden, was den Angriff leichter macht.\\
+Darauf aufbauend lässt sich ein Herding-Angriff\footnote{\url{https://eprint.iacr.org/2005/281.pdf} Herding Hash Functions} konstruieren:
+\begin{enumerate}
+\item Konstruieren einer \hyperref[pic:herdingattack]{Baumstruktur}, sodass für $2^k$ Startblöcke unseres Suffixes die Kanten Strings enthalten, sodass jeweils 2 Knoten zu einem Zwischenhash $h_i$ zusammenlaufen. Dies wird solange wiederholt bis alle Pfade zu einem finalen Hash $H$ zusammenlaufen welcher commited wird. Um eine Stufe abzusteigen werden rund
+\item Nach einiger Zeit, wird der zu wählende Präfix $P$ bekannt/gewählt
+\item Wir suchen nun einen einzigen Block, sodass wenn dieser an $P$ konkateniert wird einen Zwischenhash in unser Baumstruktur ergibt.
+\item Nun werden die Strings bis hin zur Wurzel konkateniert, wodurch eine gefälschte Nachricht entsteht die den selben Hash besitzt wie die unsprünglich committete 
+\end{enumerate}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.6]{Grafiken/HerdingAttack.png}
+\label{pic:herdingattack}
+\caption{Dieser Hashbaum gibt Pfade an um aus $2^k$ Hashes den gewünschten Hash durch Konkatenation der Strings zu erreichen.}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{Grafiken/HerdingAttack2_Linking.png}
+\label{png:herdinglinking}
+\caption{Nachdem ein Linkender String gefunden wurde, kann die gefälschte Nachricht zusammengesetzt werden}
+\end{figure}
+Ist die Menge an möglichen Präfixen im vorhinein bekannt, so kann die Menge an Starthashes entsprechend dieser Präfixe gewählt werden, wodurch der Aufwand für die Suche des Linkenden Strings gespart wird. Ist die Menge so groß dass nicht alle möglichen Hashkombinationen berechnet werden können, so könnte auch das Risiko einer Entarnung in Kauf genommen werden, wenn ein genügend ähnlicher Präfix verwendet wird. Des weiteren können auch sofern die zu verändernden Stellen innerhalb von abzugrenzenden Blöcken eines Dokumentes liegen, für jede einzelne Stelle eigene alternierende Texte mit den selben Hashes gefunden werden, sodass diese auch ohne eine Baumstruktur vertauscht werden können.
+\subsubsection{HMAC-Konstruktion}
+Sei $H: \mathbb{Z}_2^*\rightarrow\mathbb{Z}_2^{8n}$ eine Hashfunktion, $opad = (0x5C)^n=(01011100)^n\in \mathbb{Z}_2^{8n}$\\
+und $ipad=(0x36)^n=(00110110)^n\in \mathbb{Z}_2^{8n}$, dann definieren wir $HMAC:\mathbb{Z}_2^*\times\mathbb{Z}_2^*\rightarrow\mathbb{Z}_2^*$ als
+$$HMAC(x,k)=H\left( conc\left( K\oplus opad, H\left( conc\left( K\oplus ipad,x\right)\right)\right)\right)$$
+Dabei ist die Wahl von $K\in\mathbb{Z}_2^{8n}$ von k abhängig:
+\begin{itemize}
+\item $|k|=8n\Rightarrow K=k$
+\item $|k|=m<8n\Rightarrow K = k0^{8n-m}$, d.h. k wird auf Blockgröße aufgefüllt
+\item $|k|>8n\Rightarrow K = H(k)$
+\end{itemize}
+Der Keyed-Hash Message Authentification Code (HMAC) hashed hierbei die Nachricht x, sodass auch bei der Verwendung einer Hashfunktion welche nicht kollisionsresistent ist das Verfahren nicht unsicher wird. Da der Hashwert der Nachricht direkt innerhalb einer Hashoperation berechnet wird, gilt die Grundlage für CTFP nicht, da hier die Berechnung nicht in unterteilten Blöcken funktioniert. $H(x)=H(x')\nRightarrow H(xS)=H(x'S)$\\
+Damit ist die HMAC Konstruktion zwar effizient und eine Fälschung einer Nachricht schwierig, um die Authentizität einer Nachricht zu prüfen müssen aber beide Parteien den geheimen Schlüssel kennen um den Hash neu zu bilden und zu prüfen.\\
+Varianten des HMAC sind:\\
+\blue{HMAC-based One-time Password Algorithmus (HOTP)} verwendet einen Zähler welcher nach jeder Hashgeneration inkrementiert wird und bei der Hashgeneration den Schlüsssel erhöht. Anschließend wird der Hash in einen 6-10 stelligen numerischen Wert umgewandelt welcher auch von Menschen lesbar ist. Die selben Informationen müssen dem Authentifizierenden vorliegen, sodass falls dieser den Hash reproduzieren kann die Nachricht als gültig anerkannt wird. \\
+\blue{Time-based One-time Password Algorithmus (TOTP)} verwendet anstelle eines Zählers einen Zeitstempel, funktioniert sonst aber wie HOTP. Um die Ungenauigkeiten nicht synchronisierter Uhren auszugleichen umfasst der Gültigkeitsraum eines TOTP Hashes oft rund 30 Sekunden, bevor der Hash ungültig wird. Das Verfahren kommt vor allem in der 2-Faktor Authentifizierung zum Einsatz.
 \end{document}
