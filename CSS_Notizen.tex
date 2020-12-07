@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,12pt,leqno]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[ngerman]{babel}
 
@@ -12,6 +12,7 @@
 \usepackage{caption}
 \usepackage{hyperref}
 \usepackage{upgreek}
+\usepackage{mathtools}
 \usepackage{tikz}
 \hypersetup{
     colorlinks,
@@ -233,7 +234,7 @@ Nachteile von Redundanzen sind:
 	\end{itemize}
 \item Authentizität (Authenticity)
 	\begin{itemize}
-	\item Schutz vor Fälschung von Informationen / Daten
+	\item Garantie dass die Daten auch aus der angegebenen Quelle stammen
 	\end{itemize}
 \item Nicht-Abstreitbarkeit (Non-Repudiation)
 	\begin{itemize}
@@ -282,6 +283,7 @@ q = \lfloor \frac{a}{n} \rfloor \wedge r = a -qn
 \end{align*}
 \subsubsection{Größter gemeinsamer Teiler}
 \label{sec:euklid}
+Wir definieren $\mathbb{Z}_p^\times:=\{x\in\mathbb{Z}_p : ggT(x,p)=1\}$ als die Menge der multiplikativ Inversen in $\mathbb{Z}_p$. Ist $p$ prim, dann ist $(\mathbb{Z}_p^\times,\cdot_p,1)$ eine zyklische Gruppe.
 \begin{align}
 \textrm{ggT}(a,0)=|a|\\
 \textrm{ggT}(a,1)=1\\
@@ -479,7 +481,7 @@ c=m^e mod n = 2345^{17} mod 2773 = 2030\\
 m=c^d mod n = 2030^{157} mod 2773 = 2345
 \end{align*}
 
-\subsubsection{Elgramal-Kryptosystem}
+\subsubsection{Elgamal-Kryptosystem}
 Ein Verfahren was auf der Annahme beruht, dass der diskrete Logarithmus nicht einfach berechenbar ist.\\
 Die Schlüsselerzeugung funktioniert wie folgt:\\
 1. Wähle eine zyklische\footnote{Sie besitzt einen Erzeuger, sodass $\langle g\rangle:=\{g^n : n\in \mathbb{Z}\}=\mathcal{G}$ (Potenz mit dem gegebenen Verknüpfungsoperator)} Gruppe $\mathcal{G}=(G,\diamond,e)$ mit Erzeuger $g$ und $a\in \{2,...,ord(\mathcal{G})\footnote{Anzahl der Elemente in Gruppe bzw. unendlich}-1\}$, setze $A=g^a$\\
@@ -561,5 +563,234 @@ Der Keyed-Hash Message Authentification Code (HMAC) hashed hierbei die Nachricht
 Damit ist die HMAC Konstruktion zwar effizient und eine Fälschung einer Nachricht schwierig, um die Authentizität einer Nachricht zu prüfen müssen aber beide Parteien den geheimen Schlüssel kennen um den Hash neu zu bilden und zu prüfen.\\
 Varianten des HMAC sind:\\
 \blue{HMAC-based One-time Password Algorithmus (HOTP)} verwendet einen Zähler welcher nach jeder Hashgeneration inkrementiert wird und bei der Hashgeneration den Schlüsssel erhöht. Anschließend wird der Hash in einen 6-10 stelligen numerischen Wert umgewandelt welcher auch von Menschen lesbar ist. Die selben Informationen müssen dem Authentifizierenden vorliegen, sodass falls dieser den Hash reproduzieren kann die Nachricht als gültig anerkannt wird. \\
-\blue{Time-based One-time Password Algorithmus (TOTP)} verwendet anstelle eines Zählers einen Zeitstempel, funktioniert sonst aber wie HOTP. Um die Ungenauigkeiten nicht synchronisierter Uhren auszugleichen umfasst der Gültigkeitsraum eines TOTP Hashes oft rund 30 Sekunden, bevor der Hash ungültig wird. Das Verfahren kommt vor allem in der 2-Faktor Authentifizierung zum Einsatz.
+\blue{Time-based One-time Password Algorithmus (TOTP)} verwendet anstelle eines Zählers einen Zeitstempel, funktioniert sonst aber wie HOTP. Um die Ungenauigkeiten nicht synchronisierter Uhren auszugleichen umfasst der Gültigkeitsraum eines TOTP Hashes oft rund 30 Sekunden, bevor der Hash ungültig wird. Das Verfahren kommt vor allem in der 2-Faktor Authentifizierung zum Einsatz.\\
+\subsection{Digitale Signaturen}
+Signaturen erlauben es die \hyperref[item:schutzziele]{Authentizität, Integrität und Nicht-Abstreitbarkeit} einer Nachricht zu testen bzw. sicherstellen.\\
+Ein Angreifer kann keinen Schlüssel generieren, sodass damit für zwei verschiedene Nachrichten die selbe Signatur erzeugt wird.\\
+Wir unterscheiden:
+\begin{itemize}
+\item \blue{Fortgeschrittene elektronische Signatur}
+	\begin{itemize}
+	\item Signatur ist eindeutig dem Unterzeichner zuordenbar
+	\item Ermöglicht Identifizierung des Unterzeichners
+	\item Wird unter Verwendung elektronischer Signaturerstellungsdaten erstellt, die der Unterzeichner mit einem hohen maß an Vertrauen unter seiner alleinigen Kontrolle verwenden kann
+	\item Nachträgliche Veränderung unterzeichneter Daten muss erkannt werden
+	\end{itemize}
+\item \blue{Qualifizierte elektronische Signatur}
+	\begin{itemize}
+	\item Rechtliche Gleichstellung mit handschriftlicher Unterschrift
+	\item Eine Signatur welche auf einem von einem Mitgliedsstaat ausgestellten Zertifikat beruht, ist in allen Mitgliedsstaaten gültig
+	\end{itemize}	
+\end{itemize}
+
+\subsubsection{Wissen und Ziele von Angreifern}
+Wie viel Wissen ein Angreifer hat unterscheiden wir mit folgenden Begriffen:
+\begin{itemize}
+\item \blue{Key-Only Attack}, hier besitzt der Angreifer nur den öffentlichen Schlüssel
+\item \blue{Known Signature Attack}, hier sind mehrere Paare von Nachricht und Signatur bekannt
+\item \blue{Chosen Message Attack}, der Angreifer kann im Vorfeld für beliebige selbstgewählte Nachrichten die Signatur bekommen
+\item \blue{Adaptive Chosen Message Attack}, kann während des Angriffes für beliebig viele selbstgewählte Nachrichten zugehörige Signaturen bekommen
+\end{itemize}
+Die Ziele eines Angreifers mit folgenden Begriffen:
+\begin{itemize}
+\item \blue{Existential Forgery}, der Angreifer will ein gültiges Nachricht/Signatur-Paar ermitteln
+\item \blue{Selective Forgery}, gültige Signatur zu einzelnen neuen, vor dem Angriff bekannten Nachrichten ermitteln
+\item \blue{Universal Forgery}, gültige Signatur zu jedem beliebigen Dokument ermitteln
+\item \blue{Total Break}, Angreifer bestimmt den geheimen Schlüssel 
+\end{itemize}
+
+Der stärkste Sicherheitsbegriff ist der des \textit{Existential forgery under a chosen message attack}
+
+Ein Signaturschema gilt als \textbf{sicher}, wenn jeder Angreifer nach dem er n Nachrichten signiert hat mit \textbf{sehr hoher Wahrscheinlichkeit} keine Nachricht findet, sodass diese von den ursprünglich n verschieden ist aber die Signatur mit einer davon übereinstimmt
+
+\subsubsection{Signieren mit RSA}
+
+Mittels RSA kann signiert werden, denn die Ver-/Entschlüsselung kommutieren. Dazu wird zusätzlich noch eine Hashfunktion $h: A*\rightarrow \{0,...,n\}$ benötigt.\\
+Die Signatur wird wie folgt erstellt: $s=D(h(m),(d,n))=\left( h(m)\right)^d\textrm{ mod }n$\\
+Überprüfen lässt sie sich wie folgt: $h(m)=E(s,(e,n))=s^e\textrm{ mod }n$\\
+
+\textbf{Beispiel Signaturvorgang mit RSA:}\\
+Signieren:
+\begin{enumerate}
+\item Schlüsselgenerierung mit $(d,n)=(37313,241103)$ und $(e,n)=(65537,241103)$
+\item Alice will die Nachricht $m$ mit $h(m)=164796$ signieren
+\item Sie berechnet $s=h(m)^d\textrm{ mod }n=164796^{37313}\textrm{ mod }241103=129335$ 
+\end{enumerate}
+Verifizieren:
+\begin{enumerate}
+\item Bob besitzt $(e,n)$, sowie die Nachricht $m$ und ihre Signatur $s=129335$
+\item Er berechnet $s^e\textrm{ mod }n=129335^{65537}\textrm{ mod }241103=164796$
+\item Er berechnet den Hash der Nachricht $m$
+\item Da beide Berechnungen das selbe Ergebnis haben, akzeptiert Bob die Signatur
+\end{enumerate}
+Eine Signaturerstellung mit RSA ist nur sicher, sofern RSA sicher ist.
+
+\subsubsection{Digital Signature Algorithm}
+
+\textbf{Parametergenerierung:}
+\begin{enumerate}
+\item Wähle gleichverteilt zufällig eine große Primzahl $q$ (160 Bit, 224 Bit, 256 Bit)
+\item Wähle große Primzahl $p$ (1024 Bit, 2048 Bit, 3072 Bit), sodass $q|(p-1)$ gilt
+\item Suche ein $g\in\mathbb{Z}_p^\times$ mit ord\footnote{Die Ordnung eines Elementes ist die Zahl ord$(g):=$ inf$\{n\in\mathbb{N}:g^n=e\}\in\mathbb{N}\cup\{\infty\}$}$(g)=q$,d.h. wir wählen $h\in\mathbb{Z}_p^\times$ mit $g:=h^{\frac{p-1}{q}}\textrm{ mod } p \neq 1$.\footnote{ Da $ggT(h,p)=1$ ist, gilt $g\equiv_p h^{\frac{p-1}{q}}\xRightarrow{\text{Kleiner Fermat}}g^q\equiv_p h^{p-1}\equiv_p 1\Rightarrow$ ord$(g)\leq q$.\\ Da $q$ prim ist kann die Ordnung von $g$ kein Teiler von $q$ sein, damit gilt ord$(g)=q$}
+\item Die Parameter $p,q,g$ sind öffentlich
+\end{enumerate}
+
+\textbf{Schlüsselgenerierung:}
+\begin{enumerate}
+\item Wähle zufällig $x$ mit $1<x<q$
+\item Berechne $y=g^x\textrm{ mod }p$
+\end{enumerate}
+Dann ist $y$ der öffentliche Schlüssel und $x$ der private Schlüssel.\\
+Die Berechnung des privaten Schlüssel aus dem öffentlichen Schlüssel ist eine Instanz des diskreten Logarithmus, und somit nicht effizient lösbar.\\
+
+\textbf{Signieren:}
+\begin{enumerate}
+\item Wähle $k$ mit $1<k<q$
+\item Bestimme $r=(g^k\textrm{ mod }p)\textrm{ mod }q$. Falls $r=0$, beginne von vorne
+\item Bestimme $s=k^{-1}\cdot (H(m)+r\cdot x)\textrm{ mod }q$. Falls $s=0$, beginne von vorne
+\item Signatur ist das Tupel $(r,s)$
+\end{enumerate}
+\textbf{Verifikation:}
+\begin{enumerate}
+\item Ungültig, wenn $0<r<q$ oder $0<s<q$ nicht gilt
+\item Berechne $w=s^{-1}$ mod $q$
+\item Berechne $u_1=H(m)\cdot w$ mod $q$
+\item Berechne $u_2=r\cdot w$ mod $q$
+\item Berechne $v=(g^{u_1}\cdot y^{u_2}\textrm{ mod }p)$ mod $q$
+\item Akzeptiere die Signatur, falls $v=r$
+\end{enumerate}
+
+%%Falls oben mehr Text hin kommt auskommentieren
+\newpage
+
+\textbf{Beispiel für DSA}\\
+Parametergenerierung:
+\begin{enumerate}
+\item Wir wählen $q=59$ und $p=709$
+\item Mit $h=5$ gilt $g:=5^{\frac{709-1}{59}}\textrm{ mod }709=20 \neq 1$
+\item Also sind $(p,q,g)=(709,59,20)$ die öffentlichen Parameter
+\end{enumerate}
+Schlüsselgenerierung:
+\begin{enumerate}
+\item Wähle $x=23$ als privaten Schlüssel
+\item Bestimme $y=g^x$ mod $p=20^{23}$ mod $709=186$ als öffentlicher Schlüssel
+\end{enumerate}
+
+Signieren:\\
+Wir besitzen $p=709,q=59,g=20$ und $x=23$, der Hashwert unserer Nachricht ist $H(m)=16$
+\begin{enumerate}
+\item Wir wählen $k=36$
+\item Wir bestimmen $r=(20^{36}\textrm{ mod }709)\textrm{ mod }59=31$
+\item Mit $k^{-1}=41$ bestimmen wir $s=k^{-1}\cdot (H(m)+r\cdot x)\textrm{ mod }q=29889\textrm{ mod }59=35$
+\item Die Signatur ist damit $(r,s)=(31,35)$
+\end{enumerate}
+
+Verifizieren:\\
+Es sind $p=709,q=59,g=20,y=186,H(m)=16$ und der Signatur $(r,s)=(31,35)$
+\begin{enumerate}
+\item $r$ und $s$ sind gültig
+\item Wir berechnen $w=s^{-1}$ mod $q=27$
+\item Wir berechnen $u_1=H(m)\cdot w$ mod $q=16\cdot 27$ mod $59=19$
+\item Wir berechnen $u_2=r\cdot w$ mod $q=31\cdot 27$ mod $59=19$
+\item Wir berechnen $v=(g^{u_1}\cdot y^{u_2}\textrm{ mod }p)$ mod $q=(20^{19}\cdot 186^{11}$ mod $p)$ mod $q =31$
+\item Da $v=r$ gilt, wird die Signatur akzeptiert
+\end{enumerate}
+
+\subsection{Schlüsselverteilung}
+Wir unterscheiden verschiedene Schlüssel:\\
+\blue{Langzeitschlüssel} haben eine lange Gültigkeit (1 Monat bis 1 Jahr) und werden häufig zur Authentifizierung verwendet.\\
+\blue{Kurzzeitschlüssel} bzw. \blue{Sitzungsschlüssel} haben nur eine begrenzte Gültigkeit und minimieren somit das Risiko falls der Schlüssel kompromittiert wird.\\
+
+Ob bei einem asymmetrischen System ein öffentlicher Schlüssel tatsächlich von einer bestimmten Person kommt, kann mithilfe von Zertifkaten welche von einem vertrauenswürdigen Dritten - Public Key Infrastructure (PKI) - ausgestellt werden, verifiziert werden.
+Ein solches Zertifikat beinhaltet unter Anderem: Öffentlicher Schlüssel, Name, Gültigkeitszeitraum, Austeller,...\\
+Das Zertifikat wird dann mit einer digitalen Signatur des Ausstellers versehen, sodass derjenige der die Authentizität des Schlüssels prüfen will trotzdem noch dem Schlüssel des Zertifikat-Ausstellers vertrauen muss oder eben der nächst \hyperref[pic:Chainoftrust]{höheren Instanz welche den Schlüssel des Zertifikats-Austellers signiert}.
+
+\begin{figure}
+\label{pic:Chainoftrust}
+\centering
+\includegraphics[scale=0.5]{Grafiken/Chain-Of-Trust.png}
+\caption{Ein zentralisierter Ansatz ist X.509 als PKI, Root Certificates muss vertraut werden}
+\end{figure}
+
+Ein dezentralisierter Ansatz ist PGP, hierbei werden Schlüsselbünde versandt, sodass der Empfänger zum einen weiß welchen anderen öffentlichen Schlüsseln der Sender vertraut und dann in seinen bereits vorher empfangenen Schlüsselbändern nachsehen kann ob andere Personen denen er bereits vertraut auch dem Sender vertrauen. Falls dies der Fall ist kann er die neu erhaltenen Schlüssel als vertrauenswürdig speichern, sodass über Zeit ein Web of Trust entsteht wo alle Parteien untereinander ihre öffentlichen Schlüssel kennen. Hierbei ist aber fraglich ob Vertrauen wirklich transitiv ist.\\
+
+Ein Problem bei beiden Ansätzen sind das ein Schlüsselverlust/-kompromittierung dafür sorgt dass die Nachrichten nicht mehr lesbar/geheim sind.\\
+Als Lösung für letzteres kann ein Ablaufdatum für Zertifikate festgelegt werden oder mittels Widerrufszertifikaten vorher ausgestellte Zertifikate widerrufen werden.
+Diese Widerrufszertifikate können bei X.509 von einem zentralisierten Server ausgestellt werden, wobei auch hier die Vertrauenswürdigkeit und Erreichbarkeit des Servers fragwürdig ist.
+Beim Web of Trust können diese durch die Benutzer oder angegebene Parteien erstellt und verbreitet werden. Diese Updates zu verbreiten ist aber ineffizient, sollen alle alles speichern?
+
+\subsection{Schlüsselaustausch}
+Beim Man-in-the-middle Angriffsmodel hat der Angreifer vollen Zugriff auf dem Kommunikationskanal. Er kann daher:
+\begin{itemize}
+\item Nachrichten abfangen
+\item Übermittlung von Nachrichten verzögern
+\item Nachrichten unterdrücken
+\item Nachrichten durch andere Nachrichten ersetzen
+\item Nachrichten unter falscher Identität senden
+\item Er kann aber keine kryptographische Primitive nicht brechen
+\end{itemize}
+\begin{figure}
+\centering
+\label{pic:ManInTheMiddle}
+\includegraphics[scale=0.6]{Grafiken/ManInTheMiddle.png}
+\caption{Man-in-the-middle Angriff, wo A einen neuen symmetrischen Schlüssel, mit öffentlichem Schlüssel $K_B$ von B verschlüsselt an B sendet, die Chiffre wird vom Angreifer abgefangen}
+\end{figure}
+Das \hyperref[pic:ManInTheMiddle]{naive Schlüsselaustausch Protokoll} kann um eine PKI erweitert werden, welche die öffentlichen Schlüssel von A und B kennt. A holt von T den öffentlichen Schlüssel $K_B$ von B und verschlüsselt damit den neuen Sitzungsschlüssel und schickt diesem zusammen mit seinem Namen an B. Auch hier kann ein Angreifer die Chiffre abfangen und seinen Schlüssel in Verbindung mit seinem Namen an B senden.
+
+\subsubsection{Needham-Schroeder Protokolle}
+Die \textbf{symmetrische Variante} des Protokolls läuft wie folgt ab:
+\setcounter{equation}{0}
+\begin{flalign}
+A\rightarrow T:& A,B,N_A&&\\
+T\rightarrow A:& \{ N_A,K,B,\{ K,A\}_{K_B}\}_{K_A}&&\\
+A\rightarrow B:& \{ K,A\}_{K_B}&&\\
+B\rightarrow A:& \{N_B\}_K&&\\
+A\rightarrow B:& \{N_B-1\}_K&&
+\end{flalign}
+Hierbei sind $N_A$ und $N_B$ zufällig generierte Nonces. Die in Klammern geschriebene Werte werden als eine zusammengesetzte Nachricht mit dem tiefgestellten Schlüssel verschlüsselt. Dabei muss T im Besitz eines geheimen Schlüssels $K_A$ und $K_B$ zum kommunizieren mit jeweils A und B sein.\\
+
+Indem A im ersten Schritt die gewünschten Kommunikationspartner und eine Nonce $N_A$ an den Server sendet kann dieser einen geheimen Sitzungsschlüssel $K$ generieren über den nach Abschluss des Verfahrens eine gesicherte Kommunikation zwischen A und B möglich wird. Damit die im zweiten Schritt von A empfangene Chiffre auch tatsächlich einen neuen Sitzungsschlüssel enthält muss $N_A$ neu sein, da sonst ein Angreifer eine aufgezeichnete Nachricht anstelle von T an A senden könnte um die Verwendung eines alten Schlüssels zu erzwingen. Damit außerdem kein im ersten Schritt der Empfänger nicht durch einen anderen ausgetauscht werden kann ohne das A es bemerkt sendet T auch B erneut zurück. Die innere mit $K_B$ verschlüsselte Chiffre enthält das in Schritt 3 an B gesendete Paket und kann nur von B entschlüsselt werden.\
+Damit sich auch B davon überzeugen kann dass der Sitzungschlüssel $K$ neu ist sendet er eine mit K verschlüsselte Nonce $N_B$, welche A dekrementiert und zurücksendet, da $N_B$ neu ist kann auch B sicher sein, dass es sich um keinen Replay-Angriff handelt\footnote{Eine Angriffsform wo ein Angreifer zuvor aufgezeichnete Daten sendet um die Identität des vorherigen Gesprächpartners vorzutäuschen}.\\
+Leider obliegt die Schlüsselgenerierung dem Knoten T auch kennt T nun den Sitzungsschlüssel.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.6]{Grafiken/NeedhamSchroederSymmetrisch.png}
+\caption{Die symmetrische Variante des Needham-Schroeder-Schlüsselaustausches, falls der Angreifer ein altes Paar $\{K',A\}_{K_B}$ und $K'$ kennt kann der Angreifer die Indentität von A annehmen}
+\end{figure}
+
+In der \textbf{antisymmetrische Variante} funktioniert der Datenaustausch wie folgt:
+\setcounter{equation}{0}
+\begin{flalign}
+A\rightarrow T:& A,B&&\\
+T\rightarrow A:& \{K_{PB},B\}_{K_{ST}}&&\\
+A\rightarrow B:& \{N_A,A\}_{K_{PB}}&&\\
+B\rightarrow T:& B, A&&\\
+T\rightarrow B:& \{K_{PA},A\}_{K_{ST}}&&\\
+B\rightarrow A:& \{N_A,N_B\}_{K_{PA}}&&\\
+A\rightarrow B:& \{N_B\}_{K_{PB}}&&
+\end{flalign}
+
+Hierbei sind $K_{PA}$ und $K_{PB}$ die öffentlichen Schlüssel von A bzw. B, sowie $K_{ST}$ der private Signaturschlüssel von T.
+
+\subsubsection{Diffie-Hellman-Protokoll}
+Zu Beginn muss eine Primzahl $p$ und ein Generator $g\in \mathbb{Z}_p^\times$ für eine Gruppe $\mathbb{Z}_p$ gemeinsam gewählt werden. Dann läuft das Verfahren wie folgt ab:
+\begin{enumerate}
+\item A wählt $a\in\mathbb{N}$ mit $0<a<p$ zufällig und sendet $g^a$ mod $p$ an B
+\item B wählt $b\in \mathbb{N}$ mit $<b<p$ zufällig und sendet $g^b$ mod $p$ an A
+\item A berechnet $(g^b)^a$ mod $p$
+\item B berechnet $(g^a)^b$ mod $p$
+\end{enumerate}
+Damit haben A und B den selben Schlüssel $g^{ab}$ und können darüber kommunizieren. Ein passiver Angreifer, d.h. ein Angreifer welcher nur den Datenaustausch mithören kann $a$ oder $b$ nicht einfach berechnen.\\
+Allerdings wurde früher oft nur eine geringe Menge an Primzahlen für p verwendet, sodass die möglichen Logarithmen vorberechnet werden konnten. Zwei Vorberechnungen deckten $66$\% der IPsec-VPNs und $26$\% der SSH-Server ab.
+Bei einem MitM-Angriff kann der Angreifer damit parallel zwei DH-Protokolle laufen lassen und so Schlüssel selber wählen.
+Als Lösung hierfür können die Nachrichten signiert werden \blue{authenticated DH/Station-to-Station-Protokoll}.\\
+
+Für das Station-to-Station-Protokoll (STS) müssen beide Parteien einen Signaturschlüssel $sk_A$ und $sk_B$ besitzen und die Zertifikate der Schlüssel sind beiden bekannt. Wir bezeichnen $K=g^{ab}$
+\setcounter{equation}{0}
+\begin{flalign}
+A\rightarrow B: & g^a&&\\
+B\rightarrow A: &g^b,\{sig(sk_B,(g^a,g^b))\}_K&&\\
+A\rightarrow B: & \{sig(sk_A,(g^a,g^b))\}_K &&
+\end{flalign}
 \end{document}
