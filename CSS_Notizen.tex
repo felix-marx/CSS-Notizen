@@ -793,4 +793,395 @@ A\rightarrow B: & g^a&&\\
 B\rightarrow A: &g^b,\{sig(sk_B,(g^a,g^b))\}_K&&\\
 A\rightarrow B: & \{sig(sk_A,(g^a,g^b))\}_K &&
 \end{flalign}
+
+\subsection{Ausblick}
+
+\subsubsection{Integritätsschutz mit Verschlüsselung}
+
+Man unterscheidet zwischen Authenticated Encryption (AE), wo Daten verschlüsselt werden und diese Chiffre nicht manipulierbar sein soll, und Authenticated Encryption with Associated Data (AEAD), wo zusätzlich zu AE noch Metadaten unverschlüsselt übertragen werden sollen deren Integrität auch sichergestellt werden muss.\\
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.7]{Grafiken/AEKombiMAC.png}
+\caption{Dies sind AE-Verfahren: EtM ist sicher, MtE und E\&M sind nur bedingt sicher}
+\end{figure}
+
+Ein AEAD Verfahren ist Galois/Counter-Mode welches mit 128 Bit Blockchiffren arbeitet und Integritätsschutz für verschlüsselte Daten bietet.\\
+\begin{itemize}
+\item $GCTR_K(ICB,X_1||X_2||...||X_n^*)=Y_1||Y_2||...||Y_n^*$
+	\begin{enumerate}
+	\item Falls X leer ist, gibt es zurück
+	\item Setzte den ersten Zählblock $CB_1=ICB$ auf den Initialisierungswert
+	\item Für i = 1 bis n sei $CB_i= inc_{32}(CB_{i-1})$
+	\item Für i = 1 bis n-1 sei $Y_i=X_i\oplus CIPH_K(CB_i)$ für i = n wir bis zum Blockende xored, sodass $Y_n^*$ selbe Länge wie $X_n^*$ hat.
+	\end{enumerate}
+\item $GHASH_H(X_1||X_2||...||X_m)=Y_m$
+	\begin{enumerate}
+	\item Sei $Y_0=0^{128}$
+	\item Für $i=1,...,m$ sei $Y_i=(Y_{i-1}\oplus X_i)\bullet H$, wobei $\bullet$ der Multiplikation im Galois Körper $\mathbb{F}_{2^{128}}$ entspricht.
+	\end{enumerate}
+\end{itemize}
+\begin{figure}
+\centering
+\includegraphics[scale=0.9]{Grafiken/GCMArchitektur.png}
+\caption{Im GCM-Verfahren wird}
+\end{figure}
+
+\subsubsection{Secret Sharing}
+Man möchte Informationen so verschlüsseln, dass man zum Entschlüsseln eine gewisse Gruppe von Leuten zusammenarbeiten müssen. Eine Variante ist das $(t,n)$-Schwellenwert-Kryptosystem wo mindestens $t$ von insgesamt $n$ Shareholdern zusammenarbeiten müssen um eine Nachricht zu entschlüsseln.\\
+
+Ist Geheimhaltung wichtiger als Verfügbarkeit sollte $t$ nah an $n$ gewählt werden, anders herum sollte $t$ möglichst klein aber größer als $\frac{n}{2}$ gewählt werden.\\
+Um ein $(t,n)$-Kryptosystem zu konstruieren wendet man $\begin{pmatrix}n\\t\end{pmatrix}$-mal das $(t,t)$-Schwellenwert-Kryptosystem an. Damit bekommt jeder Shareholder $\begin{pmatrix}n-1\\t-1\end{pmatrix}$ Shares, um jeden möglichen Ausfall von $(n-t)$ Shareholdern abzudecken.\\
+Hierfür nehmen wir an, dass der Dealer vertrauenswürdig und der Kommunikationskanal zwischen Dealer und Shareholder, und Shareholder und Combiner sicher sind. Außerdem nimmt man an dass zumindest die Hälfte aller Shareholder ehrlich ist.\\
+
+\textbf{Shamirs Secret Sharing Protokoll:}
+Wir haben einen Schlüssel $k$ und wollen das mindestens $t$ Shareholder zusammenarbeiten müssen um ihn wiederherzustellen. Sei $n$ die Anzahl an Shareholdern.\\
+Wahl der Shares:
+\begin{enumerate}
+\item Dealer wählt Primzahl $p$ mit $p>k$ und $p>n$
+\item Dealer wählt $t-1$ Koeffizienten $a_1,a_2,...,a_{t-1}\in \mathbb{Z}_p$
+\item Dealer wählt Polynom $f(x)=k+a_1\cdot x+a_2\cdot x^2+...+a_{t-1}\cdot x^{t-1}$ mit $f(0)=k$ und $a_{t-1}\neq 0$
+\item Die Shares sind $\{s_1,s_2,...,s_n\}=\{(1,f(1)),(2,f(2)),...,(n,f(n))\}$
+\end{enumerate}
+Entschlüsselung:
+\begin{enumerate}
+\item $t$ der $n$ Shareholder geben ihre Shares dem Combiner
+\item Der Combiner versucht das Polynom wieder herzustellen (Lagrange-Interpolation)
+	\begin{enumerate}
+	\item Definiere $l_i=\prod_{j=1,j\neq i}^t\frac{x-x_j}{x_i-x_j}$
+	\item Bemerke $l_i(x_k)=\left\lbrace\begin{array}{lr}1,&\textrm{wenn }i=k\\0,&\textrm{wenn }i\neq k\end{array}\right.$
+	\item Definiere $L(x)=\sum_{i=1}^ty_i\cdot l_i(x)$
+	\item Bemerke $L(x_i)=y_i$ für alle $1\leq i\leq t$
+	\end{enumerate}
+\end{enumerate}
+Das Verfahren ist perfekt sicher, selbst wenn man $t-1$ Shares besitzt, sind alle Schlüssel gleich wahrscheinlich. Sofern $t$ gleich bleibt, können weiter Shares ohne Probleme hinzugefügt werden. Bei einem neuen $t$ kann das Verfahren mit dem selben $k$ einfach erneut ausgeführt werden.
+
+\subsubsection{Post-Quanten-Kryptographie}
+\textbf{Grovers Algorithmus} ist ein Algorithmus für Quantencomputer welcher unsortierte Datenbanken in $\mathcal{O}(\sqrt{n})$ Schritten durchsucht. Also findet er Schlüssel der Länge $n$ in $\mathcal{O}(\sqrt{2^n})$ Schritten. Eine einfache Lösung für symmetrische Kryptographie ist eine Vergrößerung (mindest Verdopplung) der Schlüssellänge.\\ 
+
+\textbf{Shors Algorithmus} hat zum Ziel $n$ effizient zu faktorisieren.
+\begin{enumerate}
+\item Wähle $a\leq n$ zufällig
+\item Wenn ggT($a,n$)$\neq$1, so gebe ggT($a,n$) aus
+\item Finde die Periode $r$ von $a$ modulo $n$, d.h. die kleinste natürliche Zahl $r$, so dass $a^r\equiv 1$ mod $n$
+\item Wenn $r$ ungerade ist, oder $a^{\frac{r}{2}} + 1\equiv 0$ mod $n$, so starte erneut bei Schritt 1
+\item Nun gilt $a^r-1=kn$
+\item Gib also ggT($a^{\frac{r}{2}}\pm 1,n$) als Lösung zurück
+\end{enumerate}
+
+Der \textbf{Algorithmus von Deutsch} kann entscheiden ob eine Funktion $f: \{0,1\}\rightarrow\{0,1\}$ konstant ist oder nicht, ohne die unterspezifizierte Funktion zwei mal auswerten zu müssen.\\
+
+In der \textbf{hashbasierte Kryptographie} wird der Hash der Schlüssels als öffentlicher Schlüssel verwendet und sein Urbild als privater Schlüssel, denn die Urbildberechnung ist auch für Quantencomputer schwer.\\
+Lamport-(Diffie-)Einmal-Signaturverfahren (Schlüsselerzeugung):
+Alice will eine Nachricht der Länge 256 Bit signieren.
+\begin{enumerate}
+\item Alice wählt (zufällig und gleichverteilt) 256 Paare von Zahlen, jeweils 256 Bits lang (privater Schlüssel)
+\item Sie hasht nun jede Zahl, die Hashs sind der öffentliche Schlüssel
+\end{enumerate}
+Signierung:
+\begin{enumerate}
+\item Für jedes Bit der Nachricht wählt Alice je nach Wert des Bits entweder die erste oder die zweite Zahl aus einem Paar ihres privaten Schlüssels
+\item Die gewonnene Zahlenfolge ist ihre Signatur
+\end{enumerate}
+Verifizierung:\\
+Bob hasht jede Zahl der Signatur und prüft, ob die Ergebnisse zu den jeweils passenden Zahlen des öffentlichen Schlüssels passen.\\
+
+Der Schlüssel darf nur einmal verwendet werden, da ein Angreifer von jeder Signatur lernt und aus Signaturen bekannter Nachrichten auch Signaturen für neue Nachrichten erzeugen kann. Zum Beispiel kann aus den Signaturen zu Nachricht $0010$ und $0111$ auch die Signatur zu $0110$ und $0011$ erzeugt werden.\\
+Der öffentliche Schlüssel und die Signatur sind im Verhältnis zur Nachrichtenlänge sehr lang.
+
+\subsubsection{Zero-Knowledge Beweise}
+
+Bei Zero-Knowledge Beweisen möchte ein Beweiser $P$ einen Verifizierer $V$ davon überzeugen, dass er ein Geheimnis kennt, ohne dabei irgendwelche Informationen über das Geheimnis preiszugeben. Außerdem soll ein außenstehender Dritter nicht davon überzeugt werden, dass der Beweiser das Geheimnis kennt.\\
+
+In einem Kryptosystem in dem der öffentliche Schlüssel zwei isomorphe Graphen $(G_0,G_1)$ sind und der private Schlüssel der Isomorphismus $\pi$ zwischen den beiden. Der Beweiser $P$ ist im Besitz von $\pi$ und möchte einen Verifizierer $V$ im Besitz des öffentlichen Schlüssels überzeugen, dass er $\pi$ kennt.
+
+\begin{enumerate}
+\item $P$ wählt ein zufälliges $a\in\{0,1\}$ und eine zufällige Permutation $\rho$ auf dem Graphen. Damit berechnet er $H:=\rho(G_a)$ und sendet $H$ an $V$ (Commitment)
+\item $V$ wählt ein zufälliges $b\in\{0,1\}$ und fordert $P$ auf ihm eine Permutation $\sigma$ mit $H=\sigma(G_b)$ zu senden (Challenge)
+\item $P$ wählt nun die Permutation wie folgt$\sigma:=\left\lbrace\begin{array}{lr}
+\rho, & \textrm{falls }a=b\\
+\rho\circ \pi^{-1},& \textrm{falls }a=0\wedge b=1\\
+\rho\circ \pi, &\textrm{falls }a=1\wedge b=0
+\end{array}\right.$ und sendet sie an $V$
+\item $V$ enpfängt $\sigma$ und prüft ob $H=\sigma(G_b)$ gilt
+\end{enumerate}
+$P$ kann nur dann immer ein richtiges $\sigma$ senden, wenn P im Besitz von $\pi$ ist. Das Protokoll muss also hinreichend oft wiederholt werden um $V$ wirklich zu überzeugen (Wahrscheinlichkeit von $1-2^{-n}$)
+\section{IT-Sicherheit}
+
+\subsection{Zugriffskontrolle}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.5]{Grafiken/Sicherheitsmodellentwicklung.png}
+\caption{Kontrollprinzipien sollen die Einhaltung der Sicherheitsrichtlinien gewährleisten und werden durch Modelle abstrahiert. Mechanismen implementieren diese Modelle.}
+\end{figure}
+Drei Modelle zur Zugriffskontrolle sind:\\
+
+\begin{itemize}
+\item Benutzerbestimmbare Zugriffkontrolle (DAC)
+	\begin{itemize}
+	\item Eigentümer ist für die Zugriffberechtigungen zu Objekten selbst verantwortlich
+	\item Rechte werden für einzelne Objekte vergeben
+	\item Objektbezogene Sicherheitseigenschaften, aber keine systemweiten
+	\item Fast alle Betriebssysteme unterstützen DAC
+	\end{itemize}
+\item Rollenbasierte Zugriffskontrolle (RBAC)
+	\begin{itemize}
+	\item Berechtigungen für Rollen statt Benutzer (MS Active Directory)
+	\end{itemize}
+\item Systembestimmte Zugriffkontrolle (MAC)
+	\begin{itemize}
+	\item Systembestimmte (regelbasierte) Festlegung von Sicherheitseigenschaften
+	\item Benutzerdefinierte Rechte werden durch systembestimmte überschrieben
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Benutzerdefinierte Zugriffskontrolle}
+Dieses Modell ist einfach zu implementieren und intuitiv, flexibel einsetzbar.\\
+Es gibt allerdings keine formale Garantien für den Informationsfluss, die Rechtevergabe/-rücknahme relativ komplex. Ein beschränkter Zugriff auf bestimmte Teile ist schwierig zu implementieren. Außerdem ist eine Rechtevergabe am Admin vorbei möglich.\\
+
+Dargestellt wird ein DAC als eine Zugriffsmatrix. Formal geschrieben als:
+\begin{tabbing}
+asdgkjaskjahsfdjkngasjkdhafh\= hajsfjh\=\kill
+Menge von Objekten: \> \>   $O$\\
+Menge von Subjekten: \>   \>    $S$\\
+Menge von Rechten: \>\>$R$ z.B. $R = \{\textrm{read, write, execute, own}\}$\\
+Matrix bestimmt Abbildung \>\> $M: S\times O\rightarrow P(R)$
+\end{tabbing}
+Da in einer Matrixrepräsentation viele Zellen leer bleiben wird eine Access Control List (ACL) verwendet um die Matrixeinträge zu speichern. In dieser stehen Tupel aus dem Prozess/Nutzer mit seinen entsprechenden Rechten.\\
+Beispielsweise: $ACL(Datei1)=\{(Prozess1, \{read, write\}),(Prozess5,\{owner,execute\})\}$\\
+\begin{figure}
+\centering
+\includegraphics[scale=0.7]{Grafiken/Unix-ACL.png}
+\caption{UNIX speichert die Rechte von Objekten in solchen Einträgen, okal kodiert. Jede Datei kann somit nur einen Besitzer haben}
+\end{figure}
+Das ist eine objektbezogene Sicht der Zugriffsmatrix, eine andere Variante ist die subjektbezogene Sicht. Hier speichert man für alle Subjekte eine Liste von Objekten samt Zugriffsrechten.\\
+Alle Rechte eines Nutzers sind effizient bestimmbar, aber die Rechte an einem spezifischen Objekt schwierig.\\
+Beispielsweise: $CL(Prozess3)=\{(Datei2,\{owner, execute\}), (Prozess1,\{signal\})\}$
+
+\subsubsection{Rollenbasierte Zugriffskontrolle}
+Hier werden die Rechte an Gruppen vergeben denen Subjekte zugeordnet sind.
+Die Rollenmitgliedschaften sind im Vergleich zu DAC leicht zu verändern und unterstützt dynamischen und statischen Ausschluss, sowie Sitzungen (Sessions) sodass nicht alle Rollen gleichzeitig aktiv sind.\\
+Formal schreibt man:
+\begin{tabbing}
+asdgkjaskjahsfdjkngasjkdhafh             \= hajsfjh\=\kill
+Menge von Subjekten: \> \>   $S$\\
+Menge von Rollen: \>   \>    $R$\\
+Menge von Zugriffsechten: \>\>$P$\\
+Zuordnung Benutzer $\rightarrow$ Rollen:\>\>$sr: S\rightarrow \mathcal{P}(R)$\\
+Zuordnung Rolle $\rightarrow$ Rechte:\>\>$pr: R\rightarrow \mathcal{P}(P)$
+\end{tabbing}
+Eine Sitzung ist eine Relation $session\subseteq S\times \mathcal{P}(R)$ und modelliert die ''aktive'' Zuordnung von Subjekten auf Rollen. Ein Subjekt kann auch nicht aktive Rollen besitzen.\\
+Mit der partiellen Ordnung $\leq\subseteq R\times R$ können wir Rollen nach ihren Rechten ordnen, sodass $R_i\leq R_j$ bedeutet, dass $R_j$ alle Rechte von $R_i$ hat und ggf. noch mehr.\\
+
+Die Funktion $active: S\rightarrow \mathcal{P}(R)$ bildet auf alle aktiven und nach $\leq$ untergeordneten Rollen eines Subjekts ab.\\
+Mit $member: R\rightarrow \mathcal{P}(S)$ bildet auf die Menge Subjekte an welche die gegebene Rolle hat.\\
+Das Prädikat $exec: S\times P\rightarrow \mathbb{B}$ gibt an ob ein Subjekt aktuell eine Berechtigung hat.\\
+
+In einer RBAC Implementierung muss immer gelten, dass ein Subjekt nur in den Rollen aktiv sein, in denen es Mitglied ist und darf nur die Rechte der aktiven Rollen besitzen.\\
+
+Rollentrennung kann statisch mit $SSD\subseteq R\times R$ ausgeschlossen werden, definiert als: $$\forall R_i,R_j\in R,\forall s\in S :\left(s\in member(R_i)\wedge s\in member(R_j)\right)\Rightarrow (R_i,R_j)\not\in SSD$$
+Dynamischen Ausschluss definiert man mit $DSD\subseteq R\times R$ wie folgt:
+\begin{align*}
+\forall R_i,R_j\in R,&\forall s\in S :\\
+&(s\in member(R_i)\wedge s\in member(R_j)\wedge \{R_i,R_j\}\subseteq active(s))\Rightarrow (R_i.R_j)\not\in DSD
+\end{align*}
+RBAC ist eine Erweiterung von DAC falls $pr=M$ gilt. 
+
+\subsubsection{Systembestimmte Zugriffskontrolle}
+Dieses Modell beschäftigt sich mit dem Informationsfluss mittels Zugriffsrechten, welche z.B. mit Multi-Level Security überwacht werden.\\
+
+Das Bell-La Padula Modell erweitert die Zugriffsmatrix $M$ um ein Zugriffskontrollsystem, indem es jedem Subjekt $s$ und jedem Objekt $o$ eine Sicherheitsmarkte (label) \textbf{L}  ($vertraulich<geheim<streng$ $geheim$) zuordnet.\\
+Außerdem benötigen wir zum erstellen von Sicherheitsklassen \textbf{SC}$=L\times \mathcal{P}(C)$ noch Sicherheitskategorien \textbf{C} welche die Zuständigkeiten modellieren.\\
+Jedem Subjekt wird eine Sicherheitsklasse (Ermächtigung) und jedem Objekt eine Sicherheitsklasse (Einstufung) zugewiesen.\\
+Auf SC definieren wir eine partielle Ordnung $\leq$:\\ 
+$\forall (l,c),(l',c')\in SC:(l,c)\leq (l',c')\Leftrightarrow l\leq l'\wedge c\subseteq c'$\\
+
+Die Sicherheitseigenschaften von Mandatory Access Control sind:
+\begin{itemize}
+\item \textbf{Simple-security-Property} (no read up Regel)
+	\begin{itemize}
+	\item Lesezugriff/Ausführung nur erlaubt falls $read\in M(s,o)\wedge SC(o)\leq SC(s)$
+	\end{itemize}
+\item \textbf{*-Property} (no write down-Regel)
+	\begin{itemize}
+	\item Append nur erlaubt falls: $append\in M(s,o)\wedge SC(s)\leq SC(o)$
+	\item Read-Write nur erlaubt falls: $read-write \in M(s,o)\wedge SC(s)=SC(o)$
+	\end{itemize}
+\item \textbf{Strong Tranquility Regel}
+	\begin{itemize}
+	\item Keine Änderung der Subjekt-Clearance oder der Objekt-Classification zur Systemlaufzeit
+	\end{itemize}
+\end{itemize}
+Nachteile des Bell-La Padula Modells sind, dass Daten tendenziell höher klassifiziert werden, Subjekte müssen möglicherweise blind schreiben (nur append). Außerdem können keine verdeckten Kanäle modelliert werden.
+Dafür ist das Modell einfach zu implementieren und bildet herarchische Informationsflüsse nach.
+\begin{figure}
+\centering
+\includegraphics[scale=0.8]{Grafiken/BibaModell-MAC.png}
+\caption{Als duale Modellzu Bell-La Padula sichert das Biba Modell die Integrität von Daten}
+\end{figure}
+\subsection{Authentifizierung}
+
+Wir definieren folgende Begriffe:
+\begin{itemize}
+\item Identität, als eine Menge von Attributen
+\item Authentisierung: Bereitstellung von Unterlagen, die es ermöglichen, die Identität zu prüfen
+\item Authentifizierung: Prüfung und Echtheitsbezeugung der Unterlagen zu Identitätsfeststellung
+\item Autorisierung: Gewährung/Verwehrung von Rechten 
+\end{itemize}
+
+Ansätze zur Authentifizierung sind:
+\begin{itemize}
+\item Authentifizierung durch Wissen (z.B. PIN, Passwort, krypt. Schlüssel)
+\item Authentifizierung durch Besitz (z.B. Smartcard, Token, SIM-Karte)
+\item Authentisierung durch Merkmale (z.B. Biometrie)
+\end{itemize}
+Verschiedene Ansätze werden normalerweise zu einem Mehrfaktorverfahren kombiniert.\\
+Bei der \textbf{einseitigen Authentifizierung} authentisiert sich eine Partei A gegenüber einer anderen Partei B (B authentifiziert A). Zum Beispiel Authentifiziert sich ein Nutzer gegenüber eines PC.\\
+Bei der \textbf{wechselseitigen Authentifizierung} authentifizieren sich zwei Parteien gegenseitig. Zum Beispiel Online-Banking bei Verwendung von Zertifikaten.
+
+\subsubsection{Authentisierung durch Wissen}
+
+Die gängigste Methode sind Passwörter, welche üblicherweise als Hashwert gespeichert und durch Salts gegen Offline-Attacken weiter geschützt werden können.\\
+Probleme sind:
+\begin{itemize}
+\item Schwache Passwörter (''dictionary attack'')
+\item Benutzer verwenden gleiches Passwort bei verschiedenen Servern
+\item Manche UNIX-Tools (telnet, ftp) übertragen Passwörter im Klartext
+\item NIS, YP übertragen Hashes (''Offline Attacke'')
+\end{itemize}
+Besser wäre ein Authentifizierungsverfahren welches die nicht Übertragung eines Passwortes erfordern würde.\\
+Arten Passwörter zu übertragen:
+\begin{itemize}
+\item Plaintext: Ein passiver Angreifer kann alles mitlesen
+\item Plaintext, TLS geschützt: Angreifer auf Datenbank erlangt alle Passwörter
+\item Hash, TLS geschützt: Angriff mit Rainbowtable, da bei eindeutigen Hashalgo. das selbe Passwort für alle Nutzer den selben Hash erzeugt
+\item Hash mit Salt, TLS geschützt: Angriff mit Rainbowtable gibt keinen Geschwindigkeitsgewinn, da der Hash nun nicht mehr allein vom Passwort abhängt.
+\end{itemize}
+Authentifizierung durch Wissen kann auch mit Challenge-Response-Verfahren (CHAP) funktionieren.
+\begin{enumerate}
+\item Server sendet Challenge $c$
+\item Nutzer verwendet Integritätsschutzverfahren auf Nachricht $m:=c$
+\item Server prüft ob Nachricht $m=c$ und prüft Authentizität via Verfahren
+\end{enumerate}
+Wie \href{figure:CHAP}{hier} zu sehen ist, muss Bob ebenfalls das Passwort speichern um $c$ zu verifizieren. Auch wenn $K_{ID}=h(passwort)$ gesetzt wird braucht ein Angreifer in diesem Fall nur $K_{ID}$. Auch muss der Klartextraum von RAND groß sein, damit ein Angreifer keine bereits benutzte Challenge wiederverwenden kann (Replay-Attack).\\
+Das Verfahren beweist Bob nur dass Alice sich authentisieren möchte, wenn authentifizierte Daten übertragen werden sollen, muss die Integrität des Kommunikationskanals geschutzt werden (Man-in-the-middle Angriff).
+
+\begin{figure}[h!]
+\centering
+\label{figure:CHAP}
+\includegraphics[scale=0.7]{Grafiken/Callenge-Response-Verfahren.png}
+\caption{Beide Parteien kennen den gemeinsamen Schlüssel $K_{ID}$, anstelle von HMAC kann auch eine Verschlüsselungsfunktion verwendet werden}
+\end{figure}
+
+\subsubsection{Authentisierung durch Besitz}
+
+Nutzer authentifizieren sich mit Tokens welche statisch - ein gespeichertes Geheimnis (Passwort), oder dynamisch - Geheimnis wird zur Berechnung von Authentifizierungs-Informationen genutzt (z.B. CHAP mit SmartCard mit Kryptoprozessor).\\
+Token können als Hardware (Schlüssel, SmartCard, Transponder) oder Software (Cookie, Client-Zertifikat) vorliegen.\\
+
+Probleme sind
+\begin{itemize}
+\item Diebstahl
+	\begin{itemize}
+	\item Nutzung des Tokens durch zusätzliche Authentifikation sichern
+		\begin{itemize}
+		\item Software-Crypto: Privaten Schlüssel mit Passwort verschlüsseln
+		\item Hardware-Crypto: Token mit Pin
+		\end{itemize}
+	\item Nutzung mit mit zusätzlichem zweiten Faktor
+	\end{itemize}
+\item Extraktion der kryptographischen Schlüssel (Kopie)
+	\begin{itemize}
+	\item Schwachstellen in Tokenfirmware
+	\item Side-Channel Angriffe
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Authentisierung durch Merkmale}
+
+Anforderungen:
+\begin{itemize}
+\item \textbf{Universalität:} Jede Person besitzt das Merkmal
+\item \textbf{Eindeutigkeit:} Merkmal ist für jede Person verschieden
+\item \textbf{Beständigkeit:} Merkmal ist unveränderlich
+\item quantitative \textbf{Erfassbarkeit} mittels Sensoren
+\item \textbf{Performanz:} Genauigkeit und Geschwindigkeit
+\item \textbf{Akzeptanz} des Merkmals beim Benutzer
+\item \textbf{Fälschungssicherheit}
+\end{itemize}
+
+Die Erkennung läuft in zwei Prozessen, dem \textbf{Enrollment}, d.h. der Registrierung eines Benutzers, und der \textbf{Verifikation}, d.h. der Erfassung und dem Vergleich mit im Enrollment erfassten Daten.\\
+
+Die Verifikation ist immer fehlerbehaftet:
+\begin{itemize}
+\item False positives: Unberechtigter wird authentifiziert (FAR) $\rightarrow$ Sicherheitsproblem
+\item False negatives: Berechtigter wird abgewiesen (FRR) $\rightarrow$ Probleme bei Akzeptanz, Benutzbarkeit
+\item FAR und FRR können durch Hinzunahme von Merkmalen gesteuert werden
+\item Equal Error Rate, wenn Anzahl an FAR und FRR gleich sind
+\item Meist ungeprüfte Hersteller-Angaben
+\end{itemize}
+
+Einzelne feine Punkte in Fingerabdrücken bezeichnet man als Minutien. Gemeint sind Verzweigungen, Endpunkte, etc. jeweils mit (relativen) Koordinaten und Winkeln\\
+Deren Muster scheint eindeutig zu sein. Minutien können allerdings durch schlechte Abdrücke fehlen. Bei der Verifikation werden vorhandene Minutien mit jenen die beim Enrollment extrahiert wurden verglichen.\\
+Biometrie birgt Datenschutzprobleme, da es Rückschlüsse auf medizinische Daten (Venenmuster) und Gesundheitszustand ermöglicht. Anstelle von Merkmalen sollten lediglich Referenzdaten gespeichert werden aus denen keine Rekonstruktion möglich ist.\\
+
+Sensoren können durch künstliche Fingerabrücke, Klone durch hochauflösende Fotos oder Gewaltkriminalität (abgeschnittener Finger) getäuscht werden.\\
+Biometriedaten sind nicht (DNA) bzw. nur begrenzt (Fingerabdruck, Iris) widerrufbar.
+Wenn Kopien prinzipiell erstellt werden können, stellt die Kompromittierung eines Lesegerätes die Authentifizierung aller anderen in Frage.
+
+\subsubsection{Kerberos}
+
+Ziel von Kerberos ist die zentrale Authentifizierung von Subjekten (Principals), sodass keine separate Authentisierung bei Dienstnutzung erforderlich ist (Single-Sign-on).\\
+Jede Domäne besitzt ein Key Distribution Center (KDC) welches aus einem Authentification Server (AS), welcher Principals seiner Domäne authentifiziert, und einem Ticket Granting Server (TGS), welcher Tickets als Identitätsausweis ausstellt.\\
+Basis der Authentifizierung sind Pre-Shared Secrets zwischen KDC und Principal, d.h. das KDC kennt die Secrets aller Netzwerkteilnehmer.\\
+
+Ein vom AS ausgestelltes Ticket Granting Ticket (TGT) beinhaltet:\\
+$T_{C,S}= (S,C,addr,timestamp,lifetime,K_{C,S})$
+\begin{align*}
+S & \quad\textrm{Name des Servers}\\
+C & \quad\textrm{Name des anfordernden Clients}\\
+addr &\quad \textrm{IP-Adresse des Clients}\\
+timestamp &\quad  \textrm{aktuelle Zeit}\\
+lifetime &\quad \textrm{Lebenszeit des Tickets}\\
+K_{C,S} &\quad \textrm{Sitzungs-Schlüssel für Kommunikation zwischen $C$ und $S$}
+\end{align*}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.7]{Grafiken/Kerberos-Login.png}
+\caption{Loginverfahren bei Kerberos. Nummerierung wie \hyperref[expl:Kerberos-Login]{hier}}
+\end{figure}
+Der Login funktioniert wie folgt:\\
+\label{expl:Kerberos-Login}
+Joe gibt Passwort auf lokalem Client C ein, $K_{joe}:= Hash(Passwort)$ wird generiert.
+\setcounter{equation}{0}
+\begin{flalign}
+Joe\rightarrow AS: & \{timestamp\}_{K_{joe}},Joe,N_1,TGS\\
+AS\rightarrow Joe: & \{K_{joe,TGS}\}_{K_{joe}},\{TGT\}_{K_{TGS}}\\
+Joe\rightarrow TGS: & \{A_{joe}\}_{K_{joe,TGS}},\{TGT\}_{K_{TGS}},SMB,N_2\\
+TGS\rightarrow C: & \{K_{joe,SMB},N_2\}_{K_{joe,TGS}},\{T_{joe,SMB}\}_{K_{SMB}} \\
+C\rightarrow SMB: & \{A_{joe}\}_{K_{joe,SMB}},\{T_{joe,SMB}\}_{K_{SMB}}\\
+SMB\rightarrow C: & \{timestamp+1\}_{K_{joe,SMB}}
+\end{flalign}
+Hierbei sind $N_1,N_2$ Nonces und $A_{joe}=(Joe,IP-Addr,timestamp)$ der Authenticator ist.
+Der sechste Schritt ist optional falls wechselseitige Authentifizierung gewünscht ist.\\
+Wenn der AS $\{timestamp\}_{K_{joe}}$ entschlüsseln kann und der Zeitstempel in den letzten 5 Minuten liegt, wird ein Ticket-Granting-Ticket TGT (beinhaltet $K_{joe,TGS}$) ausgestellt.\\
+Joe kann nach Empfangen von (2) den Sitzungsschlüssel mit TGS entschlüsseln und den zweiten Teil in (3) an TGS senden sodass TGS sicher mit Joe kommunizieren kann. Außerdem teilt Joe TGS mit, für welchen Dienst er ein Ticket möchte.\\
+
+Wenn TGS den Authenticator erfolgreich überprüft hat, sendet er in (4) einen Sitzungsschlüssel $K_{joe,SMB}$ für Kommunikation zwischen Joe und SMB, sowie ein Ticket für SMB.\\
+Joe kann nun das Ticket beim SMB-Server benutzen.\\
+
+\textbf{Angriffe auf Kerberos:}\\
+
+Beim Offline Cracking wird Übertragung (1) abgefangen und $\{timestamp\}_{K_{joe}}$ versucht zu entschlüsseln. Sollte das Ergebnis des Entschlüsselns die Form eines Zeitstempels haben, wird eine Checksum erzeugt und mit der des tatsächlichen Pakets verglichen. Stimme beide überein ist das Passwort gefunden, sonst wird das nächste ausprobiert.\\
+
+Overpass-the-hash, hier kann ein Angreifer sich gegenüber Kerberos als ein bestimmter Nutzer ausgeben, falls er den Hash eines Nutzers kennt ($K_{joe}$ kann auch der Hash des Passwortes sein, wie \hyperref[figure:CHAP]{hier}).\\
+
+Pass-the-Ticket, hier kennt der Angreifer ein Ticket des Nutzers und nutzt dieses um im Namen des Nutzers auf Dienste zuzugreifen. Angriff beginnt ab (3)\\
+
+Golden Ticket, hier stellt der Angreifer sich selbst ein TGT aus, wobei er den Masterkey des Domain Controllers besitzt. Dadurch kann er in (3) ein sein TGT einfügen und kann so vom TGS Zugriff auf jeden Dienst anfordern.\\
+
+Silver Ticket, der Angreifer kennt den Hash/Key eines Application Servers und kann damit im Namen des Servers Zugriff auf alle Dienste anfordern, auf die auch der Server zugriff hat.
+Dabei tritt er nicht mit dem Domain Controller in Kontakt
+
+
 \end{document}
