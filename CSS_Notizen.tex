@@ -977,7 +977,7 @@ Die Funktion $active: S\rightarrow \mathcal{P}(R)$ bildet auf alle aktiven und n
 Mit $member: R\rightarrow \mathcal{P}(S)$ bildet auf die Menge Subjekte an welche die gegebene Rolle hat.\\
 Das Prädikat $exec: S\times P\rightarrow \mathbb{B}$ gibt an ob ein Subjekt aktuell eine Berechtigung hat.\\
 
-In einer RBAC Implementierung muss immer gelten, dass ein Subjekt nur in den Rollen aktiv sein, in denen es Mitglied ist und darf nur die Rechte der aktiven Rollen besitzen.\\
+In einer RBAC Implementierung muss immer gelten, dass ein Subjekt nur in den Rollen aktiv sein kann, in denen es Mitglied ist und darf nur die Rechte der aktiven Rollen besitzen.\\
 
 Rollentrennung kann statisch mit $SSD\subseteq R\times R$ ausgeschlossen werden, definiert als: $$\forall R_i,R_j\in R,\forall s\in S :\left(s\in member(R_i)\wedge s\in member(R_j)\right)\Rightarrow (R_i,R_j)\not\in SSD$$
 Dynamischen Ausschluss definiert man mit $DSD\subseteq R\times R$ wie folgt:
