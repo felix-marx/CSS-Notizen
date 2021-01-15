@@ -1183,5 +1183,85 @@ Golden Ticket, hier stellt der Angreifer sich selbst ein TGT aus, wobei er den M
 Silver Ticket, der Angreifer kennt den Hash/Key eines Application Servers und kann damit im Namen des Servers Zugriff auf alle Dienste anfordern, auf die auch der Server zugriff hat.
 Dabei tritt er nicht mit dem Domain Controller in Kontakt
 
+\subsection{Software Security}
 
+\subsubsection{Malware}
+
+Malware kurz für Malicious Software bezeichnet verschiedene Typen:
+\begin{itemize}
+\item Spyware/Adware
+	\begin{itemize}
+	\item Ausspähen von persönlichen Daten
+	\item Werbedienste installieren
+	\end{itemize}
+\item Trojanisches Pferd
+	\begin{itemize}
+	\item Software die in vermeintlich sicherer Software versteckt ist
+	\item besitzt versteckte Funktionalitäten um die Nutzer auszuspähen
+	\end{itemize}
+\item Computervirus
+	\begin{itemize}
+	\item Programme, die ihren eigenen Code in ''Wirtsprogramme'' einfügen und sich dadurch verbreiten
+	\end{itemize}
+\item Computerwurm
+	\begin{itemize}
+	\item Selbstreplizierend
+	\end{itemize}
+\item Rootkits
+	\begin{itemize}
+	\item Software welche sich vor Antimalware Software versteckt. (z.B. durch Verändern von Systemdateien)
+	\end{itemize}
+\item Ransomware/Erpressungssoftware
+	\begin{itemize}
+	\item verschlüsselt Daten um diese gegen Lösegeld wieder freizugeben
+	\end{itemize}
+\end{itemize}
+Beispiel Trojaner:\\
+Thompson's Compiler ist ein modifizierter C Compiler welcher bei der Übersetzung von Tools wie /bin/login bekannte Passwörter akzeptiert. Wird ein neuer Compiler mit dem modifizierten übersetzt, wird der selbe Schadcode in den neuen eingefügt. Der modifizierte Quellcode wird gelöscht und der modifizierte Compiler bereitgestellt.\\
+
+Beispiel Wurm:\\
+Win32/Sasser nutzte eine Buffer Overflow Schwachstelle im LSASS Dienst aus um sich auf das Zielsystem zu kopieren. Angekommen scannt er nach weiteren verwundbaren Zielen. Die Schadfunktion war das unregelmäßige Herunterfahren des Computers.\\
+
+\textbf{Viren}\\
+Viren bestehen typischerweise aus 3 Phasen:
+\begin{enumerate}
+\item Insertion phase
+\item Execution phase
+\item Replication
+\end{enumerate}
+
+Bekannte Virentypen sind \textbf{Executable infectors} welche Code im Wirtsprogramm einfügen und den Kontrollfluss entsprechend verändern. Was der Virus kann von externen Faktoren abhängig sein.\\
+Diese Arten lassen sich mit Checksummen ausfindig machen.\\
+
+\textbf{Encrypted viruses} verschlüsseln den tatsächlichen Virus code und nur die Entschlüsselungsroutine kann erkannt werden.\\
+
+\textbf{Polymorpic viruses} verändern ihren Code während der Replikation um Erkennung durch statische ''Virensignaturen'' zu verhindern. Hierzu werden gängigerweise Instruktionen durch aquivalenten Code ersetzt.\\
+
+Erkennungsmöglichkeiten für Viren sind statische Virensignaturen, welche die Signaturen von Daten mit den Signaturen bekannter Viren abgleichen. Das ''Window of vulnerability'' liegt hierbei zwischen der Erstellung der Malware und der Veröffentlich der Signatur.\\
+Einfache Änderungen am Virus können bereits eine neue Signatur erfordern.\\
+
+\textbf{Sandboxing} hier wird ein Programm in einer VM ausgeführt um sich dessen Verhalten anzusehen. Mittlerweile können Viren aber erkennen ob sie in einer Sandbox ausgeführt werden oder nicht (Abrufen nicht vorhandener Webseiten). Entsprechend wird Schadsoftware ausgeführt oder nicht.\\
+Bei der \textbf{dynamische Analyse} wird das Programm decompiliert und verdächtige Codestellen untersucht.\\
+Natürlich kann auch mittels heuristischer Herangehensweise nach Viren gesucht werden.
+
+\textbf{Würmer}\\
+Würmer sind Programme die sich automatisch über das Netz selbst verbreiten. Geschieht dies ohne Nutzerinteraktion spricht man von ''wormable'' Schwachstellen.\\
+Die Ausbreitung von Würmern verläuft exponenntiell, bis die erreichbare Menge von verwundbaren Zielsystemen betroffen ist.\\
+
+\subsubsection{Buffer Overflow}
+
+Buffer Overflow sind Schwachstellen in klassischen kompilierten Programmen, bei denen aufgrund fehlender Eingabevalidierung Daten überschrieben oder Code ausgeführt werden kann.
+Falls die Eingabe über das Netzwerk erfolgt können darüber Würmer eingeschleust werden.\\
+
+Gegenmaßnahmen sind:\\
+\textbf{Address Space Layout Randomisation} (ASLR), randomatisiert die Funktionsadressen, sodass ein Angreifer diese nicht vorhersehen kann.\\
+\textbf{Stack Canaries} legt einen Prüfwert auf den Stack, sodass ein Überschreiben des RIP auch den Canary überschreibt, sodass das Programm sicherheitshalber abgebrochen wird.\\
+\textbf{Non-executable Stack} verhindert das Daten auf dem Stack als Code ausgeführt wird.\\
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.8]{Grafiken/StackSmashing.png}
+\caption{Werden zu große Daten auf den Stack geschrieben wird die Rücksprungadresse (RIP) überschrieben und das Programm crashed, da die Adresse nicht existiert}
+\end{figure}
+Kennt der Angreifer die Adresse der passwortgeschützen Methode kann er mit dieser die RIP überschreiben, sodass diese Aufgerufen wird ohne das Passwort zu kennen.
 \end{document}
