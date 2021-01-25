@@ -1248,6 +1248,10 @@ Natürlich kann auch mittels heuristischer Herangehensweise nach Viren gesucht w
 Würmer sind Programme die sich automatisch über das Netz selbst verbreiten. Geschieht dies ohne Nutzerinteraktion spricht man von ''wormable'' Schwachstellen.\\
 Die Ausbreitung von Würmern verläuft exponenntiell, bis die erreichbare Menge von verwundbaren Zielsystemen betroffen ist.\\
 
+\textbf{Phishing}\\
+Das Vortäuschen einer authentischen Email/Website mit dem Ziel Daten abzugreifen.
+Als Spear Phishing oder Dynamit Phishing bezeichnet man eine zielgerichtete Variante des Phishings welches Informationen über das Ziel verwendet um eine höhere Erfolgsquote zu erreichen, d.h. einen Anhang oder Link zu öffnen. Teilweise sind Fragmente echter (alter) Emails enthalten.
+
 \subsubsection{Buffer Overflow}
 
 Buffer Overflow sind Schwachstellen in klassischen kompilierten Programmen, bei denen aufgrund fehlender Eingabevalidierung Daten überschrieben oder Code ausgeführt werden kann.
@@ -1264,4 +1268,54 @@ Gegenmaßnahmen sind:\\
 \caption{Werden zu große Daten auf den Stack geschrieben wird die Rücksprungadresse (RIP) überschrieben und das Programm crashed, da die Adresse nicht existiert}
 \end{figure}
 Kennt der Angreifer die Adresse der passwortgeschützen Methode kann er mit dieser die RIP überschreiben, sodass diese Aufgerufen wird ohne das Passwort zu kennen.
+
+\subsection{Web Security}
+
+
+\textbf{Clientseitig:}\\
+Schutz der Verbindung mit HTTPS als TLS-gesicherte Verbindung sichert die Vertraulichkeit und Integrität. Authentifikation mittels Zertifikaten garantiert das die aufgerufene Seite authentisch ist. Hierbei unterscheidet man Extended Validation wo die Identität des Serverbetreibers  geprüft wurde. Das ist ein aufwendiger und teurer Prozess. Alternativ gibt es Domain Validation wo überprüft wurde ob der Websitebetreiber Besitzer der Domäne ist, was einfach und schnell, aber weniger sicher ist. Denn die Domain Validation sichert nur das die Domäne stimmt, nicht das die Seite korrekt/sicher ist.
+
+Weitere Schutzmechanismen sind:
+\begin{itemize}
+\item Same-Origin Policy (SOP) untersagt clientseitigen Skriptsprachen auf Objekte anderen Ursprungs als des aufgerufenen Webservers zuzugreifen
+\item Cross-Origin Resource Sharing (CORS), eine Variante von SOP welche Corss-Origin-Requests unter bestimmten Bedingungen erlaubt
+\item Content Security Policy (CSP) soll Cross-Site-Scripting und Angriffe durch Einschleusen von Daten in Webseiten verhindern soll
+\item Frame Sicherheit, durch die Überlagerung von Websiteinhalten führen Nutzer bestimmte Aktionen aus
+\item Cookie Security
+\item Web Tracking
+\item Private Browsing Konzepte
+\end{itemize}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.65]{Grafiken/AngriffeWebanwendung.png}
+\caption{Verschiedene Angriffsmöglichkeiten auf die einzelnen Teile des Datenaustausches bei Webanwendungen}
+\end{figure}
+
+\subsubsection{SQL Injection}
+
+SQL Injections bezeichnet das Einschleusen von SQL Befehlen mittels geschickter Nutzereingaben. Dies passiert meist falls nicht ausreichend geprüfte Nutzereingaben an die Datenbank weitergegeben werden.\\
+
+Dabei werden die Abfragen so verändert, dass aus einer Texteingabe ausgebrochen wird, sodass weiter SQL Befehle an den eigentlichen Befehl angehängt/eingefügt werden.\\
+Alle Befehle nach dem Zeichen \# werden ignoriert. Viele Datenbanken erlauben keine multiple statements, d.h. mehrere unabhängige Befehle in einer Zeile.
+
+Gegenmaßnahmen sind 
+\begin{itemize}
+\item parametrisierte Abfragen mit gebundenen, typisierten Parametern, wo die Nutzereingaben als Parameter in ein vorbereitetes Statement eingefügt wird
+\item Benutzung von gespeicherten parametrisierten Abfragen
+\item ''Least privilege'' Verbindungen, d.h. der Anwendung so wenige Rechte wie möglich einräumen
+\end{itemize}
+
+\subsubsection{Cross Site Scripting (XSS)}
+
+Cross Site Scripting führt Scripte auf dem Rechner des Opfers aus, indem ein Angreifer schadhaften JavaScript Code in eine HTML Seite einschleust.\\
+
+Persistent XSS bezeichnnet XSS wo die Eingabe vom Server gespeichert wird und später ausgegeben und von (anderen) Clients ausgeführt.\\
+
+Bei Non-Persistent/Reflected XSS wird die Eingabe direkt ausgegeben und vom selben Client ausgeführt. Die Eingabe ist zum Beispiel Teil der URL, d.h. der Angreifer sendet eine vorbereitete URL an den Nutzer.
+
+Zum Beispiel kann in den Befehl $<?php$ echo \$\_GET[''name''] $?>$ mittels des URL Anhangs: ?name=$\cdots$ beliebiger Code eingefügt werden.\\
+
+Es muss also jede Nutzereingabe vorgefiltert werden, bevor sie in HTML genutzt werden kann. Dabei sind Blacklists von nicht erlaubten Zeichen nicht effizient realisierbar, da Zeichen viele äquivalente Representationen haben.
+
 \end{document}
