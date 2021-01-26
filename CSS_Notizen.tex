@@ -781,17 +781,17 @@ Zu Beginn muss eine Primzahl $p$ und ein Generator $g\in \mathbb{Z}_p^\times$ f�
 \item A berechnet $(g^b)^a$ mod $p$
 \item B berechnet $(g^a)^b$ mod $p$
 \end{enumerate}
-Damit haben A und B den selben Schlüssel $g^{ab}$ und können darüber kommunizieren. Ein passiver Angreifer, d.h. ein Angreifer welcher nur den Datenaustausch mithören kann $a$ oder $b$ nicht einfach berechnen.\\
+Damit haben A und B den selben Schlüssel $g^{ab}$ mod $p$ und können darüber kommunizieren. Ein passiver Angreifer, d.h. ein Angreifer welcher nur den Datenaustausch mithören kann $a$ oder $b$ nicht einfach berechnen.\\
 Allerdings wurde früher oft nur eine geringe Menge an Primzahlen für p verwendet, sodass die möglichen Logarithmen vorberechnet werden konnten. Zwei Vorberechnungen deckten $66$\% der IPsec-VPNs und $26$\% der SSH-Server ab.
 Bei einem MitM-Angriff kann der Angreifer damit parallel zwei DH-Protokolle laufen lassen und so Schlüssel selber wählen.
 Als Lösung hierfür können die Nachrichten signiert werden \blue{authenticated DH/Station-to-Station-Protokoll}.\\
 
-Für das Station-to-Station-Protokoll (STS) müssen beide Parteien einen Signaturschlüssel $sk_A$ und $sk_B$ besitzen und die Zertifikate der Schlüssel sind beiden bekannt. Wir bezeichnen $K=g^{ab}$
+Für das Station-to-Station-Protokoll (STS) müssen beide Parteien einen Signaturschlüssel $sk_A$ und $sk_B$ besitzen und die Zertifikate der Schlüssel sind beiden bekannt. Wir bezeichnen $K=g^{ab}$ mod $p$
 \setcounter{equation}{0}
 \begin{flalign}
-A\rightarrow B: & g^a&&\\
-B\rightarrow A: &g^b,\{sig(sk_B,(g^a,g^b))\}_K&&\\
-A\rightarrow B: & \{sig(sk_A,(g^a,g^b))\}_K &&
+A\rightarrow B: & g^a\textrm{ mod }p&&\\
+B\rightarrow A: &g^b\textrm{ mod }p ,\{sig(sk_B,(g^a\textrm{ mod }p,g^b\textrm{ mod }p))\}_K&&\\
+A\rightarrow B: & \{sig(sk_A,(g^a\textrm{ mod }p,g^b\textrm{ mod }p))\}_K &&
 \end{flalign}
 
 \subsection{Ausblick}
