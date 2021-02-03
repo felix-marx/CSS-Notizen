@@ -1318,4 +1318,114 @@ Zum Beispiel kann in den Befehl $<?php$ echo \$\_GET[''name''] $?>$ mittels des 
 
 Es muss also jede Nutzereingabe vorgefiltert werden, bevor sie in HTML genutzt werden kann. Dabei sind Blacklists von nicht erlaubten Zeichen nicht effizient realisierbar, da Zeichen viele äquivalente Representationen haben.
 
+\subsection{Netzwerkgrundlagen}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{Grafiken/OSI-TCPIP.png}
+\caption{OSI und TCP/IP Modell}
+\end{figure}
+Die Application Layer stellt Funktionen für netzbasierte Software zur Verfügung. Das heißt die HTTP, FTP und SMTP Protokolle liegen auf dieser Ebene.\\
+
+Das Presentation Layer kovertiert die Daten in ein für alle Seiten verständliches Format, außerdem werden die Daten komprimiert und verschlüsselt/entschlüsselt. Zum Beispiel die Konvertierung von ASCII nach ASN.1.\\
+
+Das Session Layer authentifiziert/authorisiert den Benutzer, erstellt und beendet Sitzungen, d.h. beim Aufruf einer Webseite werden z.B. der Download von Text und Bildern in getrennten Sessions geführt. Auch hier werden wieder Daten ver- und entschlüsselt.\\
+
+Das Transport Layer teilt die Daten in Segmente auf welche die Sendereihenfolge und den Service bestimmten.
+D.h. jedes Segment bekommt eine Segment- und eine Portnummer zugeteilt.
+Auch Fehlererkennung mittels Checksummen wird hier gemacht, genauso die Flusskontrolle, d.h. Anpassung der Bandbreite.\\ 
+
+Das Network Layer versieht jedes Segment mit einer IP-Adresse. Die Daten werden zum Beispiel mit IPSec verschlüsselt. Router arbeiten auf dieser Ebene.\\
+
+Das Data Link Layer verbindet zwei Netzwerkgeräte (Hop-Verbindung mit MAC), Switches entscheiden ob Paket durchgeleitet werden.\\
+
+Im Physical Layer werden Daten in physikalische Signale konvertiert (elektrische Impulse, Lichtimpulse, Funk).\\
+
+Im TCP Modell funktioniert die Identifikation wie folgt:\\
+\begin{tabular}{lccc}
+1. & Link Layer & MAC-Adresse: & 00:15:fe:23:d4:ce\\
+2. & Internet Layer & IP-Adresse:& 130.83.22.1\\
+3. & Transport Layer & Port/Protokoll:& 80/TCP  
+\end{tabular}\\
+
+MAC-Adressen haben folgenden Aufbau: AA:BB:CC:DD:EE:FF.\\
+Dabei haben sie folgende Bedeutung:\\
+
+\begin{tabular}{|c|c|c|}
+\hline
+Bit & Wert & Bedeutung\\
+\hline
+ 1 & 0 & Individuelle Adresse eines Netzwerkadapters (Unicast)\\
+ 1 & 1 & Zieladresse für eine Gruppe von Stationen (Multicast)\\
+\hline
+ 2 & 0 & gloabal eindeutige Adresse\\
+ 2 & 1 & Lokal zugewiesen (nicht umbedingt einzigartig)\\
+ \hline
+ 3 - 24 & & Herstellerkennung\\
+ \hline
+ 25 - 48 & & Gerätekennung\\
+ \hline
+\end{tabular}\\
+
+Ein IP-Subnetz wird durch die Subnetzmaske definiert welche festlegt, dass alle mit 0-Bits gekennzeichneten Stellen vom Administrator frei vergeben werden können. Die Netzwerk ID ist die niedrigststellige Adresse, die Broadcastadresse die höchstwertige Adresse.\\
+Die erste nutzbare IP Adresse wird üblicherweise als Gateway verwendet.\\
+In der CIDR Notation wird die Anzahl an 1-Bits in der Subnetzmaske als Anzahl hinten an die Netzwerk ID angehängt, d.h. 172.16.0.0/12.\\
+
+Der Port ist ein 16-Bit Anhang an die IP-Adresse um Prozesse und Services zu identifizieren.\\
+
+\begin{tabular}{|c|c|}
+\hline
+Port Nummer & Dienst\\
+\hline
+25 & SMTP\\
+80 & HTTP\\
+143 & IMAP\\
+443 & HTTPS\\
+\hline
+\end{tabular}
+
+\subsubsection{Spoofing}
+
+MAC-Adressen können leicht gefälscht werden und bieten daher keine sichere Zugriffskontrolle, randomized MACs erleichtern aber anonymes Surfen.\\
+IPv4 Adressen werden mit dem Address Resolution Protocol (arp) und IPv6 Adressen werden mit dem Neighbor Discovery Protocol zu MAC Adressen aufgelöst. Da arp Zustandslos ist kannn Eve einfach behaupten eine bestimmte MAC Adresse zu haben (\textbf{ARP Spoofing}).\\
+
+IP Adressen werden über das \textbf{Dynamic Host Configuration Protocol (DHCP)} vergeben. Hierbei fordert Alice mittels Broadcast beim DHCP Server eine IP Adresse an. Der Server sendet anschließend die neue IP-Adresse an Alice.\\
+Beim \textbf{DHCP Spoofing} gibt sich Eve als DHCP Server aus und vergibt an Alice eine eigens gewählte IP Adresse. Falls die IP Adresse nicht im Netz liegt ist Alice nicht erreichbar, falls es sich um eine Gateway Adresse handelt führt Eve einen Man-in-the-middle Angriff durch.\\
+Eine Gegenmaßnnahme ist DHCP Snooping das im lokalen Netz nur vertrauenswürdige DHCP-Server akzeptiert.\\
+
+Um eine Domain zur zugehörigen IP-Adresse aufzulösen fragt Alice beim DNS Server nach (sofern noch nicht gecashed), dieser sendet ihr die passende IP-Adresse zu. Sollte der DNS Server die Adresse nicht kennen, fragt er beim nächst höhergelegenen DNS Server.\\
+Eve kann sich allerdings auch als DNS Server ausgeben und eine falsche IP Adresse an Alice senden.
+Die falsche Adresse wird dann von Alice gecashed (\textbf{Cash Poisoning}).\\
+Als Gegenmaßnahme können nur authentisierte DNS Antworten per DNSSEC akzeptiert werden.
+
+\subsubsection{Denial of Service}
+
+Bei DoS Angriffen wird der Zielserver durch zu viele Anfragen überlastet, sodass er nicht mehr oder nur sehr eingeschränkt verfügbar ist.\\
+Ein DoS Angriff geht hierbei nur von einem Rechner aus.\\
+Bei Distributed DoS (DDoS) Angriffen sind mehrere infizierte Rechner (Botnet) beteiligt.\\
+
+Das \textbf{Internet Control Message Protocol (ICMP)} erlaubt es Informations- und Fehlermeldungen des Netzwerks auszutauschen. Der ping Befehl ist Teil dieses Protokolls.\\
+Beim \textbf{Ping of Death (PoD) Angriff} werden miskonfigurierte ICMP Nachrichten an den Server gesendet um ihn abstürzen zu lassen.\\
+Beim \textbf{Smurf Attack (Broadcast Attack)} wird mittels einem ping an die Broadcast Adresse dafür gesorgt, dass alle Netzteilnehmer eine Antwort an die mitgegebene Antwort-Adresse (Server) senden. Als Gegenmaßnahme kann ping Broadcast verboten werden.\\
+
+Das \textbf{Transmission Control Protocol} (TCP) besteht aus drei Interaktionen. Erst sendet der Nutzer eine SYN Nachricht an den Server. Der Nachricht bestätigt den Erhalt mittels einer SYN-ACK Nachricht. Anschließend ist der Verbindungsaufbau abgeschlossen sobald der Server vom Nutzer eine Acknowledge Nachricht ACK erhält.
+Die Verbindung wird offen gehalten bis der Server ACK empfängt.\\
+Beim \textbf{SYN-Flood Angriff} werden so viele SYN Anfragen ohne ACK Bestätigung an den Server gesendet, bis dieser aufgrund zu vieler offenen Verbindungen keine weiteren mehr anbieten kann. Als Gegenmaßnahme kann in SYN Cookies die Antwortsequenznummer der Verbindung kodiert werden, sodass nach eingegangenem ACK die SYN Anfrage rekonstruiert werden kann.\\
+Ähnlich zum Smurf Attack wird bei der \textbf{SYN-ACK Flood (SYN Reflection Attack)} eine SYN Anfrage mit manipulierter Antwortadresse an alle Teilnehmer eines Netzes gesendet, sodass sie SYN-ACK antworten an das Ziel senden. Als Gegenmaßnahme könnnen SYN-ACKs durch die Firewall gefiltert werden.
+
+\subsubsection{Firewalls} 
+
+Firewalls schützen gegen Angriffe über das Netzwerk welche über die selbe Ebene auf der sie liegen geführt werden. Das heißt Application oder Proxy Firewalls schützen vor Angriffen basierend auf Anwendungen. Sie liegen auf dem Application Layer (TCP/IP).\\
+Netzwerk-Firewalls hingegen operieren auf dem Transport Layer (TCP/IP) und schützen vor Angriffen auf UDP/TCP/ICMP.\\
+Solche Netzwerk-Firewalls sind entweder zustandslos, d.h. sie entscheident basierend auf einer statischen Liste von Regeln welche Pakete durchgelassen und welche blockiert werden.\\
+Zustandsbasierte Paketfilter hingegen entscheiden dynamisch basierend auf dem Verbindungsstatus welche Pakete zur Verbindung gehören und welche blockiert werden.\\
+
+Mittels iptables kann unter Linux Netzwerk-Firewalls konfiguriert werden.\\
+Der Aufbau ist hierbei:
+\begin{lstlisting}
+iptables -A INPUT -p icmp --src 172.16.0.0/12 -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+\end{lstlisting}
+Intrusion Detection Systeme (IDS) unterucht auf Netzwerkebene den Inhalt und meldet verdächtige Kommunikation (z.B. Bytecode von Viren, Shellcode). Intrusion Prevention Systeme (IPS) kann verdächtige Kommunikation blockieren oder ändern. Die Übergänge zwischen Firewall und IDS/IPS sind fließend.
+
 \end{document}
