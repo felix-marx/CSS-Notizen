@@ -697,6 +697,7 @@ Es sind $p=709,q=59,g=20,y=186,H(m)=16$ und der Signatur $(r,s)=(31,35)$
 \end{enumerate}
 
 \subsection{Schlüsselverteilung}
+\label{sec:Schlüsselverteilung}
 Wir unterscheiden verschiedene Schlüssel:\\
 \blue{Langzeitschlüssel} haben eine lange Gültigkeit (1 Monat bis 1 Jahr) und werden häufig zur Authentifizierung verwendet.\\
 \blue{Kurzzeitschlüssel} bzw. \blue{Sitzungsschlüssel} haben nur eine begrenzte Gültigkeit und minimieren somit das Risiko falls der Schlüssel kompromittiert wird.\\
@@ -712,7 +713,7 @@ Das Zertifikat wird dann mit einer digitalen Signatur des Ausstellers versehen, 
 \caption{Ein zentralisierter Ansatz ist X.509 als PKI, Root Certificates muss vertraut werden}
 \end{figure}
 
-Ein dezentralisierter Ansatz ist PGP, hierbei werden Schlüsselbünde versandt, sodass der Empfänger zum einen weiß welchen anderen öffentlichen Schlüsseln der Sender vertraut und dann in seinen bereits vorher empfangenen Schlüsselbändern nachsehen kann ob andere Personen denen er bereits vertraut auch dem Sender vertrauen. Falls dies der Fall ist kann er die neu erhaltenen Schlüssel als vertrauenswürdig speichern, sodass über Zeit ein Web of Trust entsteht wo alle Parteien untereinander ihre öffentlichen Schlüssel kennen. Hierbei ist aber fraglich ob Vertrauen wirklich transitiv ist.\\
+Ein dezentralisierter Ansatz ist PGP (pretty good privacy), hierbei werden Schlüsselbünde versandt, sodass der Empfänger zum einen weiß welchen anderen öffentlichen Schlüsseln der Sender vertraut und dann in seinen bereits vorher empfangenen Schlüsselbändern nachsehen kann ob andere Personen denen er bereits vertraut auch dem Sender vertrauen. Falls dies der Fall ist kann er die neu erhaltenen Schlüssel als vertrauenswürdig speichern, sodass über Zeit ein Web of Trust entsteht wo alle Parteien untereinander ihre öffentlichen Schlüssel kennen. Hierbei ist aber fraglich ob Vertrauen wirklich transitiv ist.\\
 
 Ein Problem bei beiden Ansätzen sind das ein Schlüsselverlust/-kompromittierung dafür sorgt dass die Nachrichten nicht mehr lesbar/geheim sind.\\
 Als Lösung für letzteres kann ein Ablaufdatum für Zertifikate festgelegt werden oder mittels Widerrufszertifikaten vorher ausgestellte Zertifikate widerrufen werden.
@@ -774,6 +775,7 @@ A\rightarrow B:& \{N_B\}_{K_{PB}}&&
 Hierbei sind $K_{PA}$ und $K_{PB}$ die öffentlichen Schlüssel von A bzw. B, sowie $K_{ST}$ der private Signaturschlüssel von T.
 
 \subsubsection{Diffie-Hellman-Protokoll}
+\label{text:DiffieHellman}
 Zu Beginn muss eine Primzahl $p$ und ein Generator $g\in \mathbb{Z}_p^\times$ für eine Gruppe $\mathbb{Z}_p$ gemeinsam gewählt werden. Dann läuft das Verfahren wie folgt ab:
 \begin{enumerate}
 \item A wählt $a\in\mathbb{N}$ mit $0<a<p$ zufällig und sendet $g^a$ mod $p$ an B
@@ -1273,7 +1275,8 @@ Kennt der Angreifer die Adresse der passwortgeschützen Methode kann er mit dies
 
 
 \textbf{Clientseitig:}\\
-Schutz der Verbindung mit HTTPS als TLS-gesicherte Verbindung sichert die Vertraulichkeit und Integrität. Authentifikation mittels Zertifikaten garantiert das die aufgerufene Seite authentisch ist. Hierbei unterscheidet man Extended Validation wo die Identität des Serverbetreibers  geprüft wurde. Das ist ein aufwendiger und teurer Prozess. Alternativ gibt es Domain Validation wo überprüft wurde ob der Websitebetreiber Besitzer der Domäne ist, was einfach und schnell, aber weniger sicher ist. Denn die Domain Validation sichert nur das die Domäne stimmt, nicht das die Seite korrekt/sicher ist.
+Schutz der Verbindung mit HTTPS als TLS-gesicherte Verbindung sichert die Vertraulichkeit und Integrität. Authentifikation mittels Zertifikaten garantiert das die aufgerufene Seite authentisch ist. Hierbei unterscheidet man Extended Validation wo die Identität des Serverbetreibers  geprüft wurde. Das ist ein aufwendiger und teurer Prozess. Alternativ gibt es Domain Validation wo überprüft wurde ob der Websitebetreiber Besitzer der Domäne ist, was einfach und schnell, aber weniger sicher ist. Denn die Domain Validation sichert nur das die Domäne stimmt, nicht das die Seite korrekt/sicher ist. Bei Domain Validation wird üblicherweise von der Certification Authority (CA) verlangt dass der Serverbetreiber eine Challenge auf seiner Webseite teilt, sodass die CA feststellen kann dass er tatsächlich der Besitzer der Domain ist.\\
+Hierbei kann aber bereits eine bösartige/unzuverlässige CA das System korrumpieren.
 
 Weitere Schutzmechanismen sind:
 \begin{itemize}
@@ -1427,5 +1430,129 @@ iptables -A INPUT -p icmp --src 172.16.0.0/12 -j ACCEPT
 iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
 \end{lstlisting}
 Intrusion Detection Systeme (IDS) unterucht auf Netzwerkebene den Inhalt und meldet verdächtige Kommunikation (z.B. Bytecode von Viren, Shellcode). Intrusion Prevention Systeme (IPS) kann verdächtige Kommunikation blockieren oder ändern. Die Übergänge zwischen Firewall und IDS/IPS sind fließend.
+
+\subsection{DNS}
+
+\subsection{Border Gateway Protocol}
+
+Datenpakete im lokalen Netz werden über Adresstabellen gerouted. Dabei speichert der routende Schwitch welche MAC an welchem Port anliegt. Beim ersten empfangen von Nachrichten an einem Port wird die MAC des Senders mit Port in die MAC Adress table gespeichert. Ist ein Empfänger nicht eingetragen, wird die Nachricht an alle Port ausgegeben (''fluten'').\\
+
+Beim Routen mit IP-Adressen wird über den IP-Adressbereich (''Präfix'') geroutet, die Routingtabellen werden über das Border Gateway Protocol (BGP) gebildet.\\
+Hierfür abstrahieren wir das Netzwerk in Knoten aus große autonomen Systemen (AS) was in sich gekapselte Netzwerke sind.\\
+BGP kümmert sich nur um das Routing zwischen diesen Netzwerkknoten. Innerhalb der AS können verschiedene andere Protokolle zum Routen verwenden.\\
+Jedes autonome System umfasst hierbei ein IP-Netz. Nachrichten zwischen ASs werden nach dem längsten Präfix gewählt und sonst nach der kürzesten Route. Beim Routen wird zum Beispiel der Pfad über den Knoten 1.1.1.0/24 zu 1.1.0.0/16 präferiert, selbst wenn dieser Pfad länger ist.\\
+
+Beim BGP Sub-prefix hijacking leitet ein AS die Nachrichten über sein Netzwerk indem er den anderen ASs einen spezifischen Präfix mitteilt (''announcen''). Dadurch werden Daten über seinen Knoten geleitet, auch wenn es nicht der kürzeste Pfad ist. Dadurch sieht der Angreifer die komplette Kommunikation des Opfers. Beim same-prefix hijacking announced der AS den selben Präfix wie sein Opfer.\\
+Der Sub-prefix Angriff betrifft prinzipiell alle Netze, beim same-prefix hijacking sind nur Netze mit kürzeren Routen zum Ziel betroffen.\\
+Weiterhin können die umgeleiteten Daten nicht ans Ziel weitergeleitet werden, sondern das Netz simuliert die Webseite des Ziels und übernimmt die Rolle des Zieles.\\
+BGP Hijacking ist relativ schwierig, da der Angreifer am ISP vorbei agieren muss um BGP-Speaker zu sein.\\
+
+Gegenmaßnahmen:
+\begin{itemize}
+\item Regional Internet Registries (RIRs) betreiben Internet Routing Registries (IRRs), wo eingetragen wird wem welche Präfixe gehören
+\item RPKIs können versichern dass dem Sender eines BGP announcements der Addressbereich gehört
+\item IP-Raum von mindestens /24, d.h. 256 Adressen benötigt mit 20\$/Adresse 
+\end{itemize}
+
+\subsection{Sichere Verbindungen}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.42]{Grafiken/Protokolle-nach-Ebene.png}
+\caption{Sichere Verbindungsprotokolle nach TCP Ebene}
+\end{figure}
+
+\subsubsection{TLS}
+
+TLS erfüllt die Schutzziele Authentizität des Kommunikationspartners, Vertraulichkeit der Daten (symmetrische Verschlüsselung) und Integrität der Daten (HMAC).\\
+Sie bietet Replay Protection gegen das Wiedereinspielen alter Nachrichten, da Nonces verwendet werden.\\
+(Perfect) forward secrecy schützt Daten auch wenn der private Schlüssel öffentlich wird.\\
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.6]{Grafiken/Cipher-suites.png}
+\caption{Cipher Suites spezifizieren die Parameter einer TLS-Session}
+\end{figure}
+
+Die TLS Verbindungsaufbau funktioniert wie folgt:
+\setcounter{equation}{-1}
+\begin{flalign}
+CA \rightarrow Server:& \textrm{Zertifiziert public key des Servers}&&\\
+Alice \rightarrow Server:& \textrm{Startet Verbindungsaufbau}\\
+Alice \leftrightarrow Server:& \textrm{\hyperref[text:DiffieHellman]{Diffie-Hellman Schlüsselaustausch}}&&\\
+Server \rightarrow Alice:& \textrm{Zertifikat + Signatur der DH-Parameter}&&\\
+Alice \leftrightarrow Server:& \textrm{Sichere Kommunikation z.B. AES-GCM}&&
+\end{flalign}
+
+Bei (0) bekommt der Server von einer Certification Authority (CA) den Zusammenhang zwischen privaten key und Domainnamen zertifiziert. Die Zertifizierung funktioniert hierbei wie folgt:
+\setcounter{equation}{0}
+\begin{flalign}
+Server:& \textrm{Generiert asymmetrisches Schlüsselpaar}&&\\
+Server:& \textrm{Erstellt Zertifikatsrequest mit Name und public key}\\
+Server:& \textrm{Signiert Request mit private key}&&\\
+Server \rightarrow CA:& \textrm{Sendet signiertes Request}&&\\
+CA \rightarrow Server:& \textrm{Prüft Identität und stellt Zertifikat aus}&&
+\end{flalign}
+
+In (2) kann sich Alice nicht sicher sein das sie mit dem Server kommuniziert (MitM). Erst in (3) authentifiziert sich der Server Alice gegenüber indem er seinen DH Parameter ($g^b$) signiert und mittels Zertifikat so Alice nachweist dass er kein Angreifer ist.\\
+Eine Schwachstelle von TLS ist ein Fallback auf unverschlüsselte Kommunnikation, welche jedoch notwendig ist um Kompatibilität zu wahren.\\
+
+TLS schützt Daten im Transit auf Anwendungsebene, d.h. jede Anwendung muss TLS selbst einbinden, es bietet aber keine Ende-zu-Ende-Verschlüsselung.
+
+\subsubsection{IPSEC/VPN}
+
+Ein Site-to-Site VPN ist eine verschlüsselte Verbindung zwischen dem Client und einem Server. Hierbei wird den Kommunikationspartnern des Clients simuliert, dass er sich innerhalb des selben privaten Netzes befindet.\\
+Dafür wird das eigentliche IP-Paket verschlüsselt und mit einem neuen IP header versehen.\\
+Das Anpassen des Headers wird hierbei vom Gateway realisiert und der Client weiß in der Regel nichts davon.\\
+
+Im Transport Modus wo nur der Payload verschlüsselt ist bleiben die Adressen der Kommunikationspartner weiterhin sichtbar. Beim Tunnelmodus wo auch der Header verschlüsselt ist bleibten die Kommunikationspartner verborgen.\\
+
+Beim Remote Access VPN wird der Rechner virtuell ins interne Netz integriert. Dabei weiß der Client dass er eine VPN Verbindung zu dem anderen Netz besitzt. Er besitzt seine normale IP-Adresse und eine IP-Adresse aus dem internen Netz.\\
+
+\begin{tabular}{|c|c|c|}
+\hline
+& TLS & VPN\\
+\hline
+Start/Endpunkt & Client/Server & Client/Gateway\\
+Verbindungssteuerung & Anwendung & Betriebssystem/Gateway\\
+Verschlüsselte Daten & Anwendungsdaten & Alle Datenströme\\
+Vertrauensanker & Zertifizierungsstellen & Manuelle Konfiguration\\
+Protokolle & TLS, DTLS & IKE, IKEv2, IPSEC, OpenVPN,... \\
+\hline
+\end{tabular}
+
+\subsubsection{Onion-Routing/TOR}
+Pakete werden über das TOR Netzwerk versendet und dabei über eine variable Anzahl an Router geleitet bis sie das Ziel erreichen.\\
+Dabei sieht jeder Router nur die Adresse von der sein Paket kam und wohin er es weiter leitet. Damit Sender und Empfänger keiner Partei bekannt wird, werden mindestens 3 Router benötigt.\\
+TOR erschwert es Datenströme zuzuordnen, bietet aber keine perfekte Anonymität, da Pakete über korrelierende Paketgrößen zugeordnet werden (Metadaten).
+
+\subsection{Public Key Infrastrukturen}
+
+Wir unterscheiden drei Vertrauensmodelle:
+\begin{itemize}
+\item Direct Trust
+	\begin{itemize}
+		\item Kommunikationspartner tauschen öffentliche Schlüssel bzw. Zertifikate aus\\
+		\item Schlüssel/Zertifikate müssen mit gespeicherten verglichen werden, sonst ist ein MitM Angriff möglich
+		\item Nur relevant wenn sich Kommunikationspartner vorher kennen
+	\end{itemize}
+\item Hierarchical Trust
+	\begin{itemize}
+		\item Authentizität der Parteien durch Zertifikate von vertrauenswürdige Parteien (CAs)
+		\item Schlüssel der CAs müssen separat übermittelt werden
+		\item Zertifikatsstellen müssen selbst wieder vertrauenswürdig sein
+	\end{itemize}
+\item Web of Trust
+	\begin{itemize}
+		\item Vertreter ist PGP\\
+		\item Introducer schafft für Dritte Vertrauen zu neuen Kommunikationspartnern
+	\end{itemize}
+\end{itemize}
+
+Widerruf von Zertifikaten erfolgt mittels Zertifikatssperrlisten (CRL). Diese signierte Liste von gesperrten Zertifikaten einer CA sind in jedem Zertifikat verlinkt, sodass der Nutzer diese direkt überprüfen kann.\\
+Mit dem Online Zertifikate Status Protokoll (OCSP) kann bei den CAs nachgefragt werden ob ein gegebenes Zertifikat noch gültig ist.\\
+Da beides wenig genutzt wird, werden in der Regel einfach die Gültigkeitszeiträume von Zertifikaten verkürzt.\\
+
+Siehe auch \ref{sec:Schlüsselverteilung}.
 
 \end{document}
