@@ -1389,6 +1389,7 @@ Port Nummer & Dienst\\
 
 \subsubsection{Spoofing}
 
+\label{txt:spoofing}
 MAC-Adressen können leicht gefälscht werden und bieten daher keine sichere Zugriffskontrolle, randomized MACs erleichtern aber anonymes Surfen.\\
 IPv4 Adressen werden mit dem Address Resolution Protocol (arp) und IPv6 Adressen werden mit dem Neighbor Discovery Protocol zu MAC Adressen aufgelöst. Da arp Zustandslos ist kannn Eve einfach behaupten eine bestimmte MAC Adresse zu haben (\textbf{ARP Spoofing}).\\
 
@@ -1433,6 +1434,227 @@ Intrusion Detection Systeme (IDS) unterucht auf Netzwerkebene den Inhalt und mel
 
 \subsection{DNS}
 
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.5]{Grafiken/DNS-Record.png}
+\label{pic:DNS-Record}
+\caption{Beispiel eines DNS Records}
+\end{figure}
+
+Domain Name System (DNS) übersetzt Hostnamen in IP-Adressen. Die Auflösung funktioniert durch eine global verteilte Datenbank. Jeder Domainbereich wird von einer einzigen Autorität verwaltet. Die Autorität ist der Domain Registrar oder ein Unternehmen.\\
+
+Die DNS Records werden in dem \hyperref[pic:DNS-Record]{hier} angegebenen Format gepeichert.
+Die Felder haben die folgende Bedeutung:\\
+
+\begin{tabular}{|l|c|}
+\hline
+Bezeichnung & Bedeutung\\
+\hline
+Name & Identifikator der Hierarchie. . am Ende repräsentiert Wurzel der Hierarchie\\
+Type & Datentypbezeichner, gibt das Format von RData vor siehe auch \hyperref[tab:RecordType]{hier}\\
+Class & Klassenbezeichner des Netzes heute nur ''IN'' für Internet\\
+\hline
+TTL & Time to live, Verfallsdatum der Gültigkeit des Wertes ab Ausgabe\\
+RDLength & Länge des RData Felds in Bytes\\
+RData & Im DNS abgelegte Wert zum Schlüssel (Name, Class, Type)\\
+\hline
+\end{tabular}
+
+
+{\label{tab:RecordType}
+\begin{tabular}{|l|c|l|}
+\hline
+Type & RData-Beispiel & Zweck\\
+\hline
+A & 93.184.216.34 & IPv4-Adresse\\
+AAAA & 2606:2808:220::1 & IPv6-Adresse\\
+\hline
+MX & mx.example.org & Domain-Name eines Mailservers\\
+TXT & v=spf1 -all & Beliebiger Text\\
+\hline
+NS & ns.example.org & Domain-Name eines Servers einer Zone\\
+CNAME & ns.instance.com & Aliasing einzelner Name\\
+\hline
+DNAME & instance.com & Alisasing eines Teilbaums in der Hierarchie\\
+ & $\vdots$&\\
+\hline
+\end{tabular}
+}
+
+Ein DNS Record wird auch als Ressource Record bezeichnet. Als RRset bezeichnet man eine Menge von mindestens eine DNS Record mit selben Werten in Name, Type, Class, TTL.\\
+Beim Übertragen von Records wird immer das vollständige Set übertragen.\\
+
+Relevante Begriffe für die Nachrichtenübermittlung:
+\begin{itemize}
+\item Verteiltes Modell
+	\begin{itemize}
+	\item Client/Server Modell, der Client stellt Anfrage auf die der Server antwortet
+	\item Anfragen und Antworten haben ein festes Format
+	\end{itemize}
+\item Verschiedene Servertypen
+	\begin{itemize}
+	\item Autoritative Server haben Hoheit über Werte
+	\item Resolver suchen Werte und liefern sie an den Nutzer
+	\end{itemize}
+\item Transport 
+	\begin{itemize}
+	\item Erfolgt i.d.R. über UDP (serverseitiger Port: UDP/53)
+	\item TCP für große Nachrichten (serverseitiger Port: TCP/53)
+	\end{itemize}
+\end{itemize}
+
+Das Nachrichtenformat von DNS enthält folgende Daten:\\
+
+\begin{tabular}{|l|c|}
+\hline
+Element & Zweck\\
+\hline
+Header & Metadaten über die Nachricht, z.B. Flag ob Frage oder Antwort\\
+Question sectionn (Q) & Spezifikation des angefragten Wertes\\
+Answer section (Ans) & RRset das zu dem angefragten Wert passt\\
+Authority section (Au) & NS-Records der autoritativen Servers, z.B. IN NS ns.example.org.\\
+Additional section (Add)& Beliebige weitere Informationen\\
+\hline
+\end{tabular}
+
+Die DNS Anfragen haben nur das Q Feld gesetzt mit z.B. ''www.example.org. IN A?''. Die dazugehörige Antwort hat zusätzlich das Ans Feld gesetzt und hat die Antwort-Flag im Header qr=0 z.B. ''www.example.org. 42 IN A 1.2.3.4''. Dabei ist 42 die TTL und 1.2.3.4 die IPv4 Adresse vib www.example.org..\\
+Kennt ein rekursiver Resolver die Adresse nicht, sendet er eine Weiterleitung an einen anderen autoritativen Server. Dabei sind Au und Add gesetzt Ans aber leer.\\
+Exisitieren zu der gegegebenen Klasse und Typ keine Daten wird eine Sonderform ''NODATA'' gesendet wo nur die Frage zurückgesendet wird.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.7]{Grafiken/DNS-Nachricht.png}
+\caption{DNS Nachricht die die Antwort zur Frage liefert und auch noch die Adresse des für die Adresse zuständigen autoritativen Server mitteilt}
+\end{figure} 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.6]{Grafiken/DNS-Namensaufloesung.png}
+\label{pic:DNS-Namensaufloesung}
+\caption{Typischer Ablauf der Namensauflösung bei DNS}
+\end{figure}
+
+Die Namensauflösung ist \hyperref[pic:DNS-Namensaufloesung]{hier} dargestellt.\\
+Dabei fragt der rekursive Resolver solange beim Root Name Server nach der Adresse und wird solange weiter verwiesen bis der autoritative Name Server ihm die Domain auflösen kann.\\
+Hat der Forwarder die Antwort zu einer Domain bereits gecacht meldet er der Applikation direkt das gecachte Ergebnis zurück. Läuft die TTL ab fragt er erneut beim Resolver nach der Adresse.\\
+Kennt der Resolver einen lower level autoritativen name server fragt er dort nach der Adresse und überspringt die höheren Ebenen.\\
+
+Ein iterativer Resolver liefert nach der ersten Anfrage an einen autoritativen name server direkt eine Antwort zurück. Entweder die aufgelöste Adresse oder die Adresse des niedrigeren name servers, sodass der Forwarder erneut mit dieser Adresse nachfragen muss. 
+
+\subsubsection{Angriffe auf DNS}
+
+Beim \textbf{DNS Cache Poisoning} werden von einem Angreifer gefälschte Werte in einen DNS Cache eingetragen und untergraben damit die Authentizität der DNS Records im Cache.\\
+Damit wird erreicht dass der Netzwerkverkehr zu bestimmten Domains auf die Server des Angreifers umgeleitet werden.\\
+
+Möglichkeiten zur Impersonation von Diensten in der Ziel-Domain können durch folgende Möglichkeiten erreicht werden:
+\begin{itemize}
+\item Personifikation eines autoritativen Nameservers durch vergiftete Infrastrukturdaten
+\item Personifizierung eines Dienstes in der Ziel-Domain
+\item Subdomain Injection
+\item Gezielte Manipulation beliebiger anderer Werte im Cache des Resolvers
+\end{itemize}
+
+Je nachdem wo das Cache Poisoning stattfindet sind entweder nur ein Client betroffen oder mehrere.\\
+
+Beim Kashpureffs Angriff wurden gefälschte Records einer fremden Domain durch die Add section an den Resolver übermittelt, sodass sich dieser beim nächsten Auflösen an den anderen name server wendet.\\
+Als Gegenmaßnahme wurde die ''Bailiwick-Regel'' eingeführt, wonach Resolver Records verwerfen müssen deren Namen sich nicht in einer Subdomain des Antwortservers befinden.\\
+Zum Beispiel darf der name server (org.) nur Records aus der Zone .org., z.B. zu example.org. ausliefern.\\
+
+Beim \textbf{Off-Path DNS Cache Poisoning} wird eine Anfrage zum Auflösen an den Resolver gesandt. Wenn dieser den Eintrag nicht gecacht hat sendet er die Anfrage an den passenden name server weiter. Der Angreifer sendet eine manipulierte Antwort im Namen des name servers (IP-Spoofing) an den Resolver. Sofern die Antwort des Angreifers vor der authentischen Antwort ankommt ist der Angriff geglückt.\\
+Eine Herausforderung hierbei ist, dass der Angreifer die 16 Bit Transaction-ID im DNS-Header erraten muss. Wählt der Angreifer die Transaction-ID falsch wird die Antwort verworfen und die Antwort des name servers bleibt für die Dauer der TTL gespeichert.\\
+Bei einem geglückten Angriff kann der Angreifer über den eingeschleusten bösartigen name server leicht weitere Werte einspeisen.\\
+\begin{enumerate}
+\item Sende Anfrage ''[nonce].vict.im IN A?'' an den Resolver
+\item Sende Antwort nach obigem Format von der Opfer-IP-Adresse aus
+	\begin{itemize}
+	\item Möglichst viele Antworten mit unterschiedlichen Transaction-IDs (Schrotflintenprinzip)
+	\end{itemize}
+\item Bei Misserfolg, wiederhole bei (1)
+\end{enumerate}
+Als Gegenmaßnahme kann der UDP-Quellport (16 Bit) randomisiert werden, sodass sich mit der zufälligen Transaction-ID eine 32 Bit Zufallszahl ergibt. Aktuelle Bandbreiten sind hierfür nicht ausreichend. Die Gegenmaßnahme ist für MitM Angriffe unrelevant, da dieser die Nachrichten im Transit anpassen kann.\\
+
+MitM Angriff auf rekursive Resolver im Internet ist mit \hyperref[txt:BGP-PrefixHijacking]{BGP Prefix Hijacking} realisierbar. MitM Angriff auf Stub-Resolver im lokalen Netz mit \hyperref[txt:spoofing]{ARP Cache Poisoning} oder im offenen WLAN möglich.\\
+
+Eine weitere Gegenmaßnahme ist DNSSEC zu verweden, welches DNS Records signiert und die höheren name servern signieren die public keys ihrerer Kinder (Chain of trust).\\
+Gewährt Integrität und Authentizität aber keine Vertraulichkeit. 
+Allerdings werden die Antworten deutlich größer und erfordert mehr Aufwand beim Domain Betreiber.\\
+Das Protokoll ist für 2nd Level Domains immer noch kaum verbreitet.\\
+
+{\scriptsize
+\begin{tabular}{|l|c|c|}
+\hline
+Record-Typ & Zweck & Wichtigste Werte in RData\\
+\hline
+DNSKEY & Bereitstellung des public key & Validierungsschlüssel, Signaturalgo\\
+RRSIG & Bereitstellung der Signatur eines RRset & Typ und TTL des Sets, Signatur,...\\
+DS & Verkettung zu Kind-Domain & Hashwert des Kindsschlüssel, Hashalgo, ...\\
+NSEC/NSEC3 & Authentifizierung von Nicht-Exisitenz des Records & Hash nächsten Records\\
+\hline
+\end{tabular}
+}
+
+\begin{itemize}
+\item DoT (DNS over TLS)
+\item DHS (DNS over HTTPS)
+\item Beide
+	\begin{itemize}
+	\item Sicherer Transport (Vertraulichkeit, Integrität, Authentifizierung)
+	\item Sichern der Kommunikation zwischen Stub Resolver, Forwarder, Resolver
+	\item Gewährleisten keine Authentizität der Daten
+	\end{itemize}
+
+\end{itemize}
+
+Weitere Angriffe auf das DNS:
+\begin{itemize}
+\item Domain Hijacking
+	\begin{itemize}
+	\item Übernahme von Nutzerkonten bei Domain-Registraren
+	\item Anfreifer kann dann legitimiert Werte im autoritativenn Server anpassen
+	\end{itemize}
+\item Flooding-Angriff gegen DNS-Server
+	\begin{itemize}
+	\item Üblicherweise durch Botnetz
+	\item Durch zu viele Anfragen versagt der Dienst (DoS)
+	\end{itemize}
+\item Zensur des DNS
+	\begin{itemize}
+	\item Üblicherweise durch staatliche Stellen um Dienste zu sperren
+	\item Betreiber von Resolvern (z.B. ISP) filtern Werte
+	\item Kann durch das Verwenden von anderen Resolvern umgangen werden
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Drittsystem Beeinflussung durch DNS}
+
+Ein Endsystem wird durch fluten mit DNS Anfragen überlastet (DDoS).\\
+Bei einem \textbf{DNS Amplification DDoS Angriff} senden Angreifersysteme mit gespoofter Opfer-IP-Adresse Anfragen an DNS Server. Die größeren Antwortpakete werden an das Opfer gesendet und überlastet dessen Systeme.\\
+Als Gegenmaßnahme können die Kapazitätreserven an Netz und Systemen vergrößert werden und spezialisierte Weiterleitungsdienste mit starker Infrastruktur benutzt.\\
+Der DNS Dienst kann die Antwortgröße minimieren um den Amplification-Faktor gering zu halten. DNSSEC wirkt hier kontraproduktiv.\\
+Außerdem kann versucht werden Pakete mit gespoofter IP-Adresse im Ursprungsnetz zu filtern. Sicherheitsbehörden versuchen Botnetze stillzulegen.\\
+
+Bei \textbf{DNS Tunneling} werden ausgespähte Informationen aus einem kompromittierten Netzwerk exfiltriert und Netzsperren und Firewalls umgangen. Außerdem können so Bots verdeckt mit ihrem Bot Master kommunizieren.\\
+Hierzu setzt ein Angreifer einen autoritativen Server und Domain als Endpunkt auf, an den der Client Anfragen mit im Namen codierten Daten sendet. Die Resolver leiten dann unentdeckt diese Daten und die Antworten zwischen Angreifer und Client hin und her.\\
+Mittels Firewalls bzw. IDS/IPS können mit statischer Anomaliedetektion solche auffälligen Anfragen gefiltert werden. Denn die angefragten Namenn sind häufig auffällig und es entsteht viel DNS-Verkehr zu einer oder wenigen Domains.\\
+
+Mit dem \textbf{Sender Policy Framework} (SPF) wird das unautorisierte Versenden von Emails von einer Absender Domain (Email Spoofing) verhindert. Dafür spezifiziert der Domain Betreiber in seinen DNS Einträgen wer Emails senden darf. Der Empfänger holt sich diesen Record und lehnt die Email ab falls der Sender nicht autorisiert ist. Oftmals ineffektiv um nicht versehentlich legitime Emails zu blockieren.
+
+Weitere Sicherheitsmechanismen sind:
+\begin{itemize}
+\item DKIM
+	\begin{itemize}
+	\item Verhindert Email Spoofing mit Signatur durch Absende-Server und Eintragen des public keys im DNS
+	\end{itemize}
+\item Domain Validation
+	\begin{itemize}
+	\item Automatisierte Ausstellung von TLS-Zertifikaten an Domain Inhaber, welche den public key an den Domain Namen binden
+	\end{itemize}
+\item DANE
+	\begin{itemize}
+	\item Erlaubt Nachweis der Echtheit von TLS Zertifikaten einer Domain durch DNS Einträge, benötigt DNSSEC
+	\end{itemize}
+\end{itemize}
+
 \subsection{Border Gateway Protocol}
 
 Datenpakete im lokalen Netz werden über Adresstabellen gerouted. Dabei speichert der routende Schwitch welche MAC an welchem Port anliegt. Beim ersten empfangen von Nachrichten an einem Port wird die MAC des Senders mit Port in die MAC Adress table gespeichert. Ist ein Empfänger nicht eingetragen, wird die Nachricht an alle Port ausgegeben (''fluten'').\\
@@ -1446,6 +1668,7 @@ Beim BGP Sub-prefix hijacking leitet ein AS die Nachrichten über sein Netzwerk 
 Der Sub-prefix Angriff betrifft prinzipiell alle Netze, beim same-prefix hijacking sind nur Netze mit kürzeren Routen zum Ziel betroffen.\\
 Weiterhin können die umgeleiteten Daten nicht ans Ziel weitergeleitet werden, sondern das Netz simuliert die Webseite des Ziels und übernimmt die Rolle des Zieles.\\
 BGP Hijacking ist relativ schwierig, da der Angreifer am ISP vorbei agieren muss um BGP-Speaker zu sein.\\
+\label{txt:BGP-PrefixHijacking}
 
 Gegenmaßnahmen:
 \begin{itemize}
