@@ -1300,8 +1300,9 @@ Weitere Schutzmechanismen sind:
 SQL Injections bezeichnet das Einschleusen von SQL Befehlen mittels geschickter Nutzereingaben. Dies passiert meist falls nicht ausreichend geprüfte Nutzereingaben an die Datenbank weitergegeben werden.\\
 
 Dabei werden die Abfragen so verändert, dass aus einer Texteingabe ausgebrochen wird, sodass weiter SQL Befehle an den eigentlichen Befehl angehängt/eingefügt werden.\\
-Alle Befehle nach dem Zeichen \# werden ignoriert. Viele Datenbanken erlauben keine multiple statements, d.h. mehrere unabhängige Befehle in einer Zeile.
+Alle Befehle nach dem Zeichen \# werden ignoriert. Viele Datenbanken erlauben keine multiple statements, d.h. mehrere unabhängige Befehle in einer Zeile.\\
 
+Eine erfolgreiche SQL Injection kann sensitive Daten auslesen (Vertraulichkeit), Datenbankdaten verändern (Inegrität) und Administratorbefehle auf der Datenbank ausführen.\\
 Gegenmaßnahmen sind 
 \begin{itemize}
 \item parametrisierte Abfragen mit gebundenen, typisierten Parametern, wo die Nutzereingaben als Parameter in ein vorbereitetes Statement eingefügt wird
@@ -1755,7 +1756,7 @@ Wir unterscheiden drei Vertrauensmodelle:
 \begin{itemize}
 \item Direct Trust
 	\begin{itemize}
-		\item Kommunikationspartner tauschen öffentliche Schlüssel bzw. Zertifikate aus\\
+		\item Kommunikationspartner tauschen öffentliche Schlüssel bzw. Zertifikate aus
 		\item Schlüssel/Zertifikate müssen mit gespeicherten verglichen werden, sonst ist ein MitM Angriff möglich
 		\item Nur relevant wenn sich Kommunikationspartner vorher kennen
 	\end{itemize}
@@ -1767,7 +1768,7 @@ Wir unterscheiden drei Vertrauensmodelle:
 	\end{itemize}
 \item Web of Trust
 	\begin{itemize}
-		\item Vertreter ist PGP\\
+		\item Vertreter ist PGP
 		\item Introducer schafft für Dritte Vertrauen zu neuen Kommunikationspartnern
 	\end{itemize}
 \end{itemize}
